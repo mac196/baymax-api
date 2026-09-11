@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Power Apps - Baymax</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif;}
+body{background:radial-gradient(circle at top, #1a1a2e 0%, #0a0a0a 100%);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px;}
+.top-nav{width:900px;max-width:95%;display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;}
+.top-nav a{color:white;text-decoration:none;opacity:0.6;transition:0.3s;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;}
+.top-nav a:hover{opacity:1;border-color:#00f2ff;color:#00f2ff;}
+.header{text-align:center;margin-bottom:35px;}
+.header .badge{display:inline-block;background:rgba(255,150,0,0.15);border:1px solid #ff9600;color:#ff9600;padding:5px 14px;border-radius:20px;font-size:11px;letter-spacing:1px;margin-bottom:15px;}
+.header h1{font-size:38px;letter-spacing:2px;}
+.header h1 span{color:#ff9600;text-shadow:0 0 15px #ff9600;}
+.header p{opacity:0.5;margin-top:8px;}
+.grid{width:900px;max-width:95%;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:28px;cursor:pointer;transition:0.3s;backdrop-filter:blur(10px);position:relative;overflow:hidden;}
+.card:hover{transform:translateY(-6px);border-color:#ff9600;box-shadow:0 10px 40px rgba(255,150,0,0.2);background:rgba(255,255,255,0.08);}
+.card .icon{font-size:36px;margin-bottom:14px;}
+.card h3{font-size:18px;margin-bottom:6px;}
+.card p{opacity:0.5;font-size:13px;line-height:1.5;margin-bottom:16px;}
+.card .btn-power{background:rgba(255,150,0,0.15);border:1px solid rgba(255,150,0,0.4);color:#ff9600;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;}
+.card.coming{opacity:0.35;cursor:not-allowed;}
+.tag{position:absolute;top:15px;right:15px;font-size:9px;font-weight:bold;padding:3px 8px;border-radius:20px;background:#ff9600;color:black;}
+.status{text-align:center;margin-top:35px;font-size:13px;opacity:0.3;width:900px;max-width:95%;border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top-nav">
+<a href="../index.html">← Back to Hub</a>
+<span style="opacity:0.3;font-size:12px;">POWER APPS / FRONTEND</span>
+</div>
+<div class="header">
+<div class="badge">⚡ BUILDING TODAY</div>
+<h1>POWER <span>APPS</span></h1>
+<p>One click, Baymax DOES the task — Frontend Design</p>
+</div>
+<div class="grid">
+<div class="card"><span class="tag">READY UI</span><div class="icon">🎬</div><h3>Video Cutter</h3><p>Auto cut silences, add captions, export for TikTok/Reels.</p><div class="btn-power">⚡ Run Power</div></div>
+<div class="card"><span class="tag">READY UI</span><div class="icon">🎨</div><h3>Thumbnail Maker</h3><p>Generate clickbait thumbnails with your face + text.</p><div class="btn-power">⚡ Run Power</div></div>
+<div class="card"><span class="tag">READY UI</span><div class="icon">🎙️</div><h3>Voiceover Studio</h3><p>Turn script into AI voiceover with your cloned voice.</p><div class="btn-power">⚡ Run Power</div></div>
+<div class="card"><div class="icon">🔍</div><h3>Research Bot</h3><p>Baymax researches any topic and gives you summary + sources.</p><div class="btn-power">⚡ Run Power</div></div>
+<div class="card"><div class="icon">📧</div><h3>Email Drafter</h3><p>Writes emails in your tone from just 2 keywords.</p><div class="btn-power">⚡ Run Power</div></div>
+<div class="card"><div class="icon">📝</div><h3>Script Writer</h3><p>From idea to full YouTube script with hooks.</p><div class="btn-power">⚡ Run Power</div></div>
+<div class="card coming"><div class="icon">🤖</div><h3>Auto Poster</h3><p>Coming soon - auto post to socials.</p></div>
+<div class="card coming"><div class="icon">💾</div><h3>Memory Saver</h3><p>Coming soon - saves everything.</p></div>
+<div class="card coming"><div class="icon">⚙️</div><h3>Custom Power</h3><p>Build your own power button.</p></div>
+</div>
+<div class="status">⚡ Frontend Only — All buttons are UI. Backend logic will be wired after design is locked.</div>
+</body>
+</html>
