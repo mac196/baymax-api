@@ -1,19 +1,48 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Personal Intelligence - Baymax</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
 .top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;}
-.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}</style></head><body>
-<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">PERSONAL INTELLIGENCE / GEMINI</span></div>
-<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(34,197,94,0.15);border:1px solid #22c55e;color:#22c55e;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">🔗 GOOGLE PERSONAL INTELLIGENCE</div><h1 style="font-size:34px;">PERSONAL <span style="color:#22c55e;">INTEL</span></h1><p style="opacity:0.5;">Gmail + Photos + YouTube + Search = one answer</p></div>
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}
+#chat{height:350px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;margin:20px 0;padding:10px;}
+.msg{padding:12px 16px;border-radius:16px;max-width:80%;font-size:14px;line-height:1.4;}
+.user{align-self:flex-end;background:#22c55e;color:black;}
+.bot{align-self:flex-start;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);}
+.inputRow{display:flex;gap:10px;}
+input{flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:14px 18px;color:white;outline:none;}
+button{background:#22c55e;border:none;padding:12px 22px;border-radius:20px;font-weight:700;cursor:pointer;}</style></head><body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">PERSONAL INTELLIGENCE / LIVE API</span></div>
+<div style="text-align:center;margin-bottom:10px;"><h1 style="font-size:34px;">PERSONAL <span style="color:#22c55e;">INTEL</span></h1><p style="opacity:0.5;">Connected to live Baymax API</p></div>
 <div class="card">
-<div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:16px;padding:18px;">
-<div style="font-size:12px;opacity:0.6;">EXAMPLE QUERY</div>
-<div style="margin-top:8px;font-weight:600;">"I'm at tire shop — need tire size, trim, license plate"</div>
-<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;font-size:13px;">
-<div style="display:flex;gap:8px;"><span style="color:#22c55e;">📧 Gmail:</span><span style="opacity:0.7;">Found receipt — 2023 Honda Accord EX-L</span></div>
-<div style="display:flex;gap:8px;"><span style="color:#22c55e;">📸 Photos:</span><span style="opacity:0.7;">Found tire sidewall — 235/45R18</span></div>
-<div style="display:flex;gap:8px;"><span style="color:#22c55e;">📸 Photos:</span><span style="opacity:0.7;">License plate ABC-1234 from driveway pic 2024</span></div>
-<div style="margin-top:8px;background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;">✅ Answer ready — form auto-filled for tire shop</div>
+<div id="chat"><div class="msg bot">Hello, I am Baymax. How can I help you today?</div></div>
+<div class="inputRow"><input id="msgInput" placeholder="Ask Baymax anything..."><button onclick="send()">Send</button></div>
+<div id="status" style="font-size:11px;opacity:0.4;margin-top:10px;text-align:center;">API: baymax-api-bil6.onrender.com ✓ Live</div>
 </div>
-</div>
-<div style="margin-top:15px;display:flex;gap:8px;"><span style="font-size:11px;background:rgba(255,255,255,0.05);padding:6px 12px;border-radius:20px;">📧 Gmail</span><span style="font-size:11px;background:rgba(255,255,255,0.05);padding:6px 12px;border-radius:20px;">📸 Photos</span><span style="font-size:11px;background:rgba(255,255,255,0.05);padding:6px 12px;border-radius:20px;">▶️ YouTube</span><span style="font-size:11px;background:rgba(255,255,255,0.05);padding:6px 12px;border-radius:20px;">🔍 Search</span></div>
-</div></body></html>
+<script>
+const API = "https://baymax-api-bil6.onrender.com/chat";
+async function send(){
+ const input = document.getElementById('msgInput');
+ const text = input.value.trim();
+ if(!text) return;
+ addMsg(text,'user');
+ input.value='';
+ addMsg('Thinking...','bot');
+ try{
+  const res = await fetch(API,{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body: JSON.stringify({message: text})
+  });
+  const data = await res.json();
+  document.getElementById('chat').lastChild.remove();
+  addMsg(data.reply || data.response || JSON.stringify(data),'bot');
+ } catch(e){
+  document.getElementById('chat').lastChild.remove();
+  addMsg('Error: '+e.message+' — check if backend is awake','bot');
+ }
+}
+function addMsg(t,c){
+ const d=document.createElement('div'); d.className='msg '+c; d.innerText=t;
+ document.getElementById('chat').appendChild(d);
+ document.getElementById('chat').scrollTop=99999;
+}
+document.getElementById('msgInput').addEventListener('keypress',e=>{if(e.key==='Enter')send()});
+</script></body></html>
