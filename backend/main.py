@@ -16,14 +16,6 @@ except ImportError:
     def get_baymax_reply(msg):
         return f"Baymax heard: {msg}"
 
-# Groq Vision Client
-try:
-    from groq import Groq
-    groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-except Exception as e:
-    groq_client = None
-    print(f"Groq not configured: {e}")
-
 app = FastAPI(title="Baymax Brain")
 
 app.add_middleware(
@@ -82,8 +74,6 @@ translation_cache = {}
 def translate_unlimited(text, src, tgt):
     src_m = src.split('-')[0].lower()
     tgt_m = tgt.split('-')[0].lower()
-
-    # FTAPI 1 - Main unlimited
     try:
         url = f"https://ftapi.pythonanywhere.com/translate?sl={src_m}&dl={tgt_m}&text={urllib.parse.quote(text)}"
         r = requests.get(url, timeout=15)
@@ -92,8 +82,6 @@ def translate_unlimited(text, src, tgt):
             return j["destination-text"]
     except Exception as e:
         print(f"FTAPI1 failed: {e}")
-
-    # FTAPI 2 - Backup
     try:
         url = f"https://ftapi.vedhatech.com/translate?sl={src_m}&dl={tgt_m}&text={urllib.parse.quote(text)}"
         r = requests.get(url, timeout=15)
@@ -102,8 +90,6 @@ def translate_unlimited(text, src, tgt):
             return j["destination-text"]
     except Exception as e:
         print(f"FTAPI2 failed: {e}")
-
-    # Lingva - Backup 2
     try:
         url = f"https://lingva.ml/api/v1/{src_m}/{tgt_m}/{urllib.parse.quote(text)}"
         r = requests.get(url, timeout=10)
@@ -112,16 +98,13 @@ def translate_unlimited(text, src, tgt):
         print(f"Lingva failed: {e}")
         raise e
 
-# ================== ENDPOINTS ==================
-
 @app.get("/api")
 def api_home():
-    return {"status": "Baymax online - FTAPI + Vision mode"}
+    return {"status": "Baymax online - FTAPI + Vision Live Key"}
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    reply = get_baymax_reply(req.message)
-    return {"reply": reply}
+    return {"reply": get_baymax_reply(req.message)}
 
 @app.post("/api/translate")
 async def translate_text(req: TranslateRequest):
@@ -133,19 +116,14 @@ async def translate_text(req: TranslateRequest):
             return {"translated": "", "source": src, "target": tgt}
         if src == tgt:
             return {"translated": text, "source": src, "target": tgt}
-
         cache_key = f"{src}:{tgt}:{text.lower()}"
         if cache_key in translation_cache:
             return {"translated": translation_cache[cache_key], "source": src, "target": tgt}
-
         translated = translate_unlimited(text, src, tgt)
-
         translation_cache[cache_key] = translated
         if len(translation_cache) > 1000:
             translation_cache.pop(next(iter(translation_cache)))
-
         return {"translated": translated, "source": src, "target": tgt}
-
     except Exception as e:
         print(f"Translate error: {e}")
         return {"error": str(e), "translated": req.text}
@@ -153,30 +131,33 @@ async def translate_text(req: TranslateRequest):
 @app.post("/api/screen-analyze")
 async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
     try:
-        if not groq_client:
-            return {"description": "Groq API key not set on Render. Please add GROQ_API_KEY in Environment Variables."}
+        api_key = os.getenv("GROQ_API_KEY") or os.getenv("GROQ_KEY") or os.getenv("GROQ") or os.getenv("groq_api_key")
+        if not api_key:
+            return {"description": "❌ GROQ_API_KEY not found. Go to Render Dashboard > Environment > Add Variable: GROQ_API_KEY = gsk_... Then Manual Deploy > Clear cache & Deploy."}
+
+        api_key = api_key.strip()
+        print(f"Groq key loaded: {api_key[:10]}...")
+
+        from groq import Groq
+        live_client = Groq(api_key=api_key)
 
         content = await file.read()
         b64 = base64.b64encode(content).decode('utf-8')
         mime = file.content_type or "image/jpeg"
 
         target_lang = parse_lang(lang)
-        # if target is zh-CN keep as Chinese otherwise use 2-letter for prompt
         prompt_lang = "English" if target_lang.startswith("en") else target_lang
 
         prompt = f"""
-        You are Baymax, a warm healthcare companion. Analyze this image thoroughly.
-
-        1. Describe EXACTLY what you see: objects, people, location, colors, text, numbers.
-        2. If there is any text/receipt/menu/sign in another language, translate it to {prompt_lang}.
-        3. If it's a receipt/bill/medical report: extract store, total, items, date.
-        4. If it's a place/screenshot/map: give helpful context.
-        5. Be concise but clear, friendly like Baymax. End with a helpful suggestion: "Want me to...?"
-
+        You are Baymax. Analyze this image thoroughly.
+        1. Describe EXACTLY what you see: objects, style, atmosphere.
+        2. If there is text in another language, translate it to {prompt_lang}.
+        3. If it's a receipt/bill: extract store, total, items.
+        4. Be warm, concise, helpful like Baymax.
         Respond in {prompt_lang}.
         """
 
-        resp = groq_client.chat.completions.create(
+        resp = live_client.chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=[
                 {
@@ -193,8 +174,9 @@ async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
         return {"description": description}
 
     except Exception as e:
-        print(f"Vision error: {e}")
-        return {"description": f"Baymax couldn't see clearly: {e}. Try another image."}
+        import traceback
+        traceback.print_exc()
+        return {"description": f"Vision error: {str(e)}. Check Render Logs. Make sure your Groq key is valid and has vision access."}
 
 @app.get("/api/languages")
 async def get_languages():
@@ -220,10 +202,7 @@ def get_pulse():
 def get_latest():
     with open(DATA_FILE, "r") as f:
         history = json.load(f)
-    if history:
-        return history[-1]
-    return {}
+    return history[-1] if history else {}
 
-# Mount frontend last
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 app.mount("/", StaticFiles(directory=BASE_DIR, html=True), name="frontend")
