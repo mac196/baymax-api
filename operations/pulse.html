@@ -1,13 +1,185 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Pulse - Baymax</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
-.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;} .top a:hover{border-color:#3b82f6;color:#3b82f6;}
-.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;backdrop-filter:blur(12px);}</style></head><body>
-<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">PULSE / OVERNIGHT</span></div>
-<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(59,130,246,0.15);border:1px solid #3b82f6;color:#3b82f6;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">🌅 CHATGPT PULSE INSPIRED</div><h1 style="font-size:34px;">PULSE <span style="color:#3b82f6;text-shadow:0 0 15px #3b82f6;">MORNING</span></h1><p style="opacity:0.5;font-size:13px;margin-top:6px;">Runs overnight, pulls Gmail, Calendar, Chat — swipeable cards</p></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baymax - Pulse Check</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
+body{background:#f8fafc;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px}
+.card{background:white;width:100%;max-width:400px;border-radius:24px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.08);text-align:center}
+h1{font-size:22px;margin-bottom:4px}
+.sub{color:#64748b;font-size:14px;margin-bottom:20px}
+#cameraWrap{width:100%;aspect-ratio:1;border-radius:50%;overflow:hidden;background:black;position:relative;margin:0 auto 20px;border:8px solid #e2e8f0}
+#video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);color:white;font-size:14px}
+.bpm{font-size:64px;font-weight:800;color:#0f172a;line-height:1}
+.bpm-label{color:#64748b;font-size:14px;margin-bottom:16px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-size:15px}
+#startBtn{background:#0f172a;color:white}
+#saveBtn{background:#e2e8f0;color:#0f172a;margin-top:10px;display:none}
+#status{margin-top:12px;font-size:13px;color:#64748b;min-height:20px}
+canvas{display:none}
+</style>
+</head>
+<body>
 <div class="card">
-<div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:10px;">
-<div style="min-width:260px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:16px;padding:18px;"><div style="font-size:11px;opacity:0.5;">TODAY 7:00 AM</div><div style="margin-top:8px;font-weight:600;">Your mom's birthday in 2 days</div><div style="font-size:13px;opacity:0.7;margin-top:6px;">Drafted gift idea from your Photos + Gmail. Tap to buy.</div><button style="margin-top:12px;padding:6px 14px;background:#3b82f6;border:none;border-radius:20px;color:white;font-size:11px;">View Gift</button></div>
-<div style="min-width:260px;background:rgba(0,0,0,0.3);border-radius:16px;padding:18px;"><div style="font-size:11px;opacity:0.5;">CALENDAR</div><div style="margin-top:8px;font-weight:600;">3 meetings, first at 10AM</div><div style="font-size:13px;opacity:0.7;margin-top:6px;">I prepped notes + agenda for each.</div></div>
-<div style="min-width:260px;background:rgba(0,0,0,0.3);border-radius:16px;padding:18px;"><div style="font-size:11px;opacity:0.5;">EMAILS</div><div style="margin-top:8px;font-weight:600;">2 need reply</div><div style="font-size:13px;opacity:0.7;margin-top:6px;">Drafted, 1-tap approve to send.</div></div>
+<h1>❤️ Pulse Check</h1>
+<p class="sub">Cover back camera + flash with fingertip</p>
+<div id="cameraWrap">
+<video id="video" autoplay playsinline muted></video>
+<div id="overlay">Tap START to begin</div>
 </div>
-</div></body></html>
+<div class="bpm" id="bpmDisplay">--</div>
+<div class="bpm-label">BPM</div>
+<button class="btn" id="startBtn" onclick="startScan()">START SCAN</button>
+<button class="btn" id="saveBtn" onclick="saveToBaymax()">SAVE TO BAYMAX BRAIN</button>
+<div id="status"></div>
+<canvas id="canvas"></canvas>
+</div>
+
+<script>
+let video = document.getElementById('video');
+let canvas = document.getElementById('canvas');
+let ctx = canvas.getContext('2d');
+let bpmDisplay = document.getElementById('bpmDisplay');
+let overlay = document.getElementById('overlay');
+let statusEl = document.getElementById('status');
+let startBtn = document.getElementById('startBtn');
+let saveBtn = document.getElementById('saveBtn');
+
+let scanning = false;
+let values = [];
+let lastBPM = null;
+let stream = null;
+
+async function startCamera(){
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment", width: 640, height: 480 }
+    });
+    video.srcObject = stream;
+    const track = stream.getVideoTracks()[0];
+    try{
+      await track.applyConstraints({ advanced: [{ torch: true }] });
+    }catch(e){}
+    return true;
+  }catch(e){
+    statusEl.innerText = "Camera error: " + e.message;
+    return false;
+  }
+}
+
+async function startScan(){
+  if(scanning) return;
+  let ok = await startCamera();
+  if(!ok) return;
+  scanning = true;
+  values = [];
+  lastBPM = null;
+  bpmDisplay.innerText = "--";
+  overlay.innerText = "Keep finger steady... 15s";
+  statusEl.innerText = "Reading... keep finger fully covered";
+  startBtn.style.display = "none";
+  saveBtn.style.display = "none";
+  saveBtn.innerText = "SAVE TO BAYMAX BRAIN";
+  saveBtn.style.background = "#e2e8f0";
+
+  let startTime = Date.now();
+  let interval = setInterval(()=>{
+    if(!scanning){ clearInterval(interval); return; }
+    if(Date.now() - startTime > 15000){
+      clearInterval(interval);
+      finishScan();
+      return;
+    }
+    processFrame();
+  }, 100);
+}
+
+function processFrame(){
+  canvas.width = 50;
+  canvas.height = 50;
+  ctx.drawImage(video, 0, 0, 50, 50);
+  let data = ctx.getImageData(0,0,50,50).data;
+  let r=0,g=0,b=0;
+  for(let i=0;i<data.length;i+=4){ r+=data[i]; g+=data[i+1]; b+=data[i+2]; }
+  let count = data.length/4;
+  r/=count; g/=count; b/=count;
+  let brightness = (r+g+b)/3;
+  if(brightness < 40 || brightness > 230){
+    overlay.innerText = "Cover lens fully with finger!";
+    return;
+  }
+  values.push(r);
+  overlay.innerText = `Reading... ${values.length}`;
+  if(values.length > 150){
+    let bpm = calculateBPM();
+    if(bpm) bpmDisplay.innerText = bpm;
+  }
+}
+
+function calculateBPM(){
+  if(values.length < 50) return null;
+  let mean = values.reduce((a,b)=>a+b,0)/values.length;
+  let filtered = values.map(v=>v-mean);
+  let peaks = 0;
+  for(let i=1;i<filtered.length-1;i++){
+    if(filtered[i] > filtered[i-1] && filtered[i] > filtered[i+1] && filtered[i] > 2){
+      peaks++;
+      i+=5;
+    }
+  }
+  let durationSec = values.length * 0.1;
+  let bpm = Math.round((peaks / durationSec) * 60);
+  if(bpm < 50 || bpm > 180) return null;
+  return bpm;
+}
+
+function finishScan(){
+  scanning = false;
+  let bpm = calculateBPM();
+  if(!bpm){
+    overlay.innerText = "Too much movement, try again";
+    statusEl.innerText = "Could not read, keep finger still";
+    startBtn.style.display = "block";
+    startBtn.innerText = "RETRY SCAN";
+    return;
+  }
+  lastBPM = bpm;
+  bpmDisplay.innerText = bpm;
+  overlay.innerText = `${bpm} BPM`;
+  statusEl.innerText = `Ready to save: ${bpm} BPM`;
+  startBtn.style.display = "block";
+  startBtn.innerText = "SCAN AGAIN";
+  saveBtn.style.display = "block";
+  if(stream){
+    stream.getTracks().forEach(t=>t.stop());
+  }
+}
+
+async function saveToBaymax(){
+  if(!lastBPM) return;
+  let btn = document.getElementById('saveBtn');
+  btn.innerText = "Saving...";
+  try{
+    const res = await fetch('/api/pulse', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ bpm: lastBPM, user_id: 'baymax_user' })
+    });
+    if(!res.ok) throw new Error('server');
+    const data = await res.json();
+    statusEl.innerText = `✅ Saved to Baymax Brain: ${lastBPM} BPM`;
+    btn.innerText = 'SAVED ✓';
+    btn.style.background = '#10B981';
+    btn.style.color = 'white';
+  }catch(e){
+    localStorage.setItem('baymax_last_bpm', lastBPM);
+    statusEl.innerText = `⚠️ Saved locally: ${lastBPM} BPM (backend offline)`;
+    btn.innerText = 'SAVED LOCALLY';
+  }
+}
+</script>
+</body>
+</html>
