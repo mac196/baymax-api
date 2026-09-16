@@ -40,30 +40,40 @@ if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w") as f:
         json.dump([], f)
 
-# --- NEW: SMART LANGUAGE PARSER ---
+# --- SMART LANGUAGE PARSER - FIXED FOR zh-CN ---
 LANG_MAP = {
-    "english": "en", "spanish": "es", "french": "fr", "chinese": "zh",
+    "english": "en", "spanish": "es", "french": "fr", "chinese": "zh-CN",
     "german": "de", "japanese": "ja", "korean": "ko", "russian": "ru",
     "arabic": "ar", "hindi": "hi", "portuguese": "pt", "italian": "it",
-    "dutch": "nl", "turkish": "tr", "swahili": "sw", "kinyarwanda": "rw"
+    "dutch": "nl", "turkish": "tr", "swahili": "sw", "kinyarwanda": "rw",
+    "afrikaans": "af", "albanian": "sq", "amharic": "am"
 }
 
 def parse_lang(raw: str) -> str:
     s = raw.lower().strip()
-    # if already like "en" or "zh"
-    if len(s) <= 5 and " " not in s and "-" not in s:
-        return s.split()[0][:2]
-    # search for known language name
+    # Direct Chinese fix - deep-translator needs zh-CN not zh
+    if "chinese" in s or s == "zh" or s == "cn" or "cn chinese" in s:
+        return "zh-CN"
+
+    # Search for known language name
     for name, code in LANG_MAP.items():
         if name in s:
             return code
-    # fallback: try second word "GB English" -> "English"
+
+    # Check parts like "GB English - Source"
     parts = s.replace("-", " ").split()
     for p in parts:
         if p in LANG_MAP:
             return LANG_MAP[p]
-        if len(p) == 2 and p.isalpha():
-            return p
+        if p == "zh":
+            return "zh-CN"
+
+    # Fallback: if it's already a short code
+    if len(s) <= 6 and " " not in s:
+        if s == "zh":
+            return "zh-CN"
+        return s
+
     return "en"
 
 @app.get("/api")
@@ -80,12 +90,15 @@ async def translate_text(req: TranslateRequest):
     try:
         src = parse_lang(req.from_lang)
         tgt = parse_lang(req.to_lang)
+
+        # Don't translate if same language
         if src == tgt:
             return {"translated": req.text, "source": src, "target": tgt}
+
         translated = GoogleTranslator(source=src, target=tgt).translate(req.text)
         return {"translated": translated, "source": src, "target": tgt}
     except Exception as e:
-        print(f"Translate error: {e}")
+        print(f"Translate error: {e} | src={req.from_lang} tgt={req.to_lang}")
         return {"error": str(e), "translated": f"Error: {e}"}
 
 @app.get("/api/languages")
@@ -93,7 +106,7 @@ async def get_languages():
     try:
         return {"languages": GoogleTranslator().get_supported_languages(as_dict=True)}
     except:
-        return {"languages": ["en","fr","es","rw","ja"]}
+        return {"languages": ["en","fr","es","rw","ja","zh-CN"]}
 
 @app.post("/api/pulse")
 def save_pulse(req: PulseRequest):
