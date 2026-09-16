@@ -1,12 +1,60 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Screen Awareness - Baymax</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
-.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;}
-.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}</style></head><body>
+.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;}.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}
+.drop{transition:0.2s;}
+.drop.dragover{border-color:#00f2ff!important;background:rgba(0,242,255,0.1)!important;}
+#preview{max-width:100%;max-height:260px;border-radius:12px;display:none;}
+</style></head><body>
 <div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">SCREEN AWARENESS / APPLE</span></div>
-<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(0,242,255,0.1);border:1px solid #00f2ff;color:#00f2ff;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">👁️ ON-SCREEN AWARENESS</div><h1 style="font-size:34px;">WHAT AM <span style="color:#00f2ff;">I LOOKING AT?</span></h1><p style="opacity:0.5;">Baymax sees your screen — identifies places, receipts, photos</p></div>
+<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(0,242,255,0.1);border:1px solid #00f2ff;color:#00f2ff;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">👁️ ON-SCREEN AWARENESS</div><h1 style="font-size:34px;">WHAT AM <span style="color:#00f2ff;">I LOOKING AT?</span></h1><p style="opacity:0.5;">Drop any screenshot, receipt, photo — in any language</p></div>
 <div class="card">
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-<div style="background:rgba(0,0,0,0.4);border-radius:14px;padding:0;overflow:hidden;height:280px;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,0.2);"><span style="opacity:0.4;">📸 Drop screenshot / photo here</span></div>
-<div><div style="background:rgba(0,242,255,0.1);border:1px solid rgba(0,242,255,0.3);border-radius:14px;padding:16px;"><div style="font-size:12px;opacity:0.6;">DETECTED</div><div style="margin-top:6px;">📍 Wingen Bakery — receipt found<br>💰 Total $47.50 — split bill?<br>🗺️ 2.3 miles away</div><button style="margin-top:12px;padding:8px 16px;background:#00f2ff;border:none;border-radius:20px;color:black;font-weight:600;font-size:12px;">Pay Your Share</button></div>
-<div style="margin-top:14px;background:rgba(0,0,0,0.3);padding:14px;border-radius:12px;font-size:12px;opacity:0.6;">Try: "Directions from here" • "Who's in this photo?" • "Summarize this article"</div></div>
-</div></div></body></html>
+<div id="dropZone" class="drop" style="background:rgba(0,0,0,0.4);border-radius:14px;padding:0;overflow:hidden;height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,0.2);cursor:pointer;">
+<span id="dropText" style="opacity:0.4;">📸 Drop screenshot / photo here or click</span>
+<img id="preview">
+<input type="file" id="fileInput" accept="image/*" hidden>
+</div>
+<div>
+<div style="background:rgba(0,242,255,0.1);border:1px solid rgba(0,242,255,0.3);border-radius:14px;padding:16px;min-height:160px;">
+<div style="font-size:12px;opacity:0.6;">DETECTED</div>
+<div id="result" style="margin-top:8px;line-height:1.5;">Upload an image and Baymax will tell you what it is — in your language.</div>
+</div>
+<div style="margin-top:14px;background:rgba(0,0,0,0.3);padding:14px;border-radius:12px;font-size:12px;opacity:0.6;">Try: "Directions from here" • "Who's in this photo?" • "Summarize this"</div>
+</div>
+</div>
+</div>
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const preview = document.getElementById('preview');
+const dropText = document.getElementById('dropText');
+const result = document.getElementById('result');
+
+dropZone.addEventListener('click', ()=>fileInput.click());
+dropZone.addEventListener('dragover', e=>{e.preventDefault(); dropZone.classList.add('dragover');});
+dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', ()=>{ if(fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+async function handleFile(file){
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  dropText.style.display = 'none';
+  result.innerHTML = '👁️ Baymax is looking...';
+
+  const form = new FormData();
+  form.append('file', file);
+  try{
+    const res = await fetch('/api/screen-analyze?lang=en', {method:'POST', body:form});
+    const data = await res.json();
+    result.innerHTML = data.description.replace(/\n/g,'<br>');
+  }catch(e){
+    result.innerHTML = '❌ Could not analyze. Check GROQ_API_KEY on Render.';
+  }
+}
+</script>
+</body></html>
