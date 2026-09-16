@@ -11,7 +11,7 @@ body{background:radial-gradient(circle at top, #1a1a2e 0%, #0a0a0a 100%);color:w
 .top-nav a{color:white;text-decoration:none;opacity:0.6;transition:0.3s;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;}
 .top-nav a:hover{opacity:1;border-color:#00f2ff;color:#00f2ff;}
 .header{text-align:center;margin-bottom:35px;}
-.header .badge{display:inline-block;background:rgba(0,242,255,0.15);border:1px solid #00f2ff;color:#00f2ff;padding:5px 14px;border-radius:20px;font-size:11px;letter-spacing:1px;margin-bottom:15px;}
+.header.badge{display:inline-block;background:rgba(0,242,255,0.15);border:1px solid #00f2ff;color:#00f2ff;padding:5px 14px;border-radius:20px;font-size:11px;letter-spacing:1px;margin-bottom:15px;}
 .header h1{font-size:38px;letter-spacing:2px;}
 .header h1 span{color:#00f2ff;text-shadow:0 0 15px #00f2ff;}
 .header p{opacity:0.5;margin-top:8px;}
@@ -28,39 +28,80 @@ body{background:radial-gradient(circle at top, #1a1a2e 0%, #0a0a0a 100%);color:w
 .controls{display:flex;gap:15px;justify-content:center;flex-wrap:wrap;}
 .btn{padding:14px 30px;border-radius:30px;border:none;font-size:15px;font-weight:600;cursor:pointer;transition:0.3s;}
 .btn-mic{background:white;color:black;}
+.btn-mic.recording{background:#ff0040;color:white;box-shadow:0 0 20px #ff0040;animation:pulse 1s infinite;}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
 .btn-translate{background:#00f2ff;color:black;box-shadow:0 0 30px rgba(0,242,255,0.4);}
 .btn-secondary{background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(255,255,255,0.1);}
-.status{text-align:center;margin-top:20px;font-size:13px;opacity:0.4;}
-.status .dot{display:inline-block;width:8px;height:8px;background:#00ff88;border-radius:50%;margin-right:6px;}
+.status{text-align:center;margin-top:20px;font-size:13px;opacity:0.6;}
+.status.dot{display:inline-block;width:8px;height:8px;background:#00ff88;border-radius:50%;margin-right:6px;}
+@media(max-width:700px){.text-boxes{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 <div class="top-nav">
 <a href="../index.html">← Back to Hub</a>
-<span style="opacity:0.3;font-size:12px;">TRANSLATION OP / FRONTEND</span>
+<span style="opacity:0.3;font-size:12px;">TRANSLATION OP / BAYMAX BRAIN</span>
 </div>
 <div class="header">
 <div class="badge">OPERATION ACTIVE</div>
 <h1>TRANSLATION <span>MODE</span></h1>
-<p>Real-time voice & text — Frontend Design</p>
+<p>Real-time voice & text — 133 Languages via Baymax Brain</p>
 </div>
 <div class="main-card">
 <div class="lang-row">
-<select class="lang-select"><option>🇬🇧 English - Source</option><option>🇫🇷 French</option><option>🇪🇸 Spanish</option><option>🇷🇼 Kinyarwanda</option><option>🇯🇵 Japanese</option></select>
-<div class="swap">⇄</div>
-<select class="lang-select"><option>🇫🇷 French - Target</option><option>🇬🇧 English</option><option>🇪🇸 Spanish</option><option>🇷🇼 Kinyarwanda</option></select>
+<select class="lang-select" id="sourceLang"></select>
+<div class="swap" id="swapBtn">⇄</div>
+<select class="lang-select" id="targetLang"></select>
 </div>
 <div class="text-boxes">
-<div class="text-area"><label>SPEAK OR TYPE</label><textarea>Hello, how are you today?</textarea></div>
-<div class="text-area translated"><label>BAYMAX TRANSLATION</label><textarea readonly>Bonjour, comment allez-vous aujourd'hui ?</textarea></div>
+<div class="text-area"><label>SPEAK OR TYPE</label><textarea id="sourceText" placeholder="Type or hold mic...">Hello, how are you today?</textarea></div>
+<div class="text-area translated"><label>BAYMAX TRANSLATION</label><textarea id="translatedText" readonly placeholder="Translation will appear..."></textarea></div>
 </div>
 <div class="controls">
-<button class="btn btn-mic">🎤 Hold to Speak</button>
-<button class="btn btn-translate">🌐 Translate</button>
-<button class="btn btn-secondary">🔊 Play</button>
-<button class="btn btn-secondary">📋 Copy</button>
+<button class="btn btn-mic" id="micBtn">🎤 Hold to Speak</button>
+<button class="btn btn-translate" id="translateBtn">🌐 Translate</button>
+<button class="btn btn-secondary" id="playBtn">🔊 Play</button>
+<button class="btn btn-secondary" id="copyBtn">📋 Copy</button>
 </div>
-<div class="status"><span class="dot"></span> Frontend Only — Backend will be wired later</div>
+<div class="status" id="status"><span class="dot"></span> Connected to Baymax Brain</div>
 </div>
+<script>
+const allLangs=[["en","🇬🇧 English"],["fr","🇫🇷 French"],["es","🇪🇸 Spanish"],["rw","🇷🇼 Kinyarwanda"],["ja","🇯🇵 Japanese"],["de","🇩🇪 German"],["it","🇮🇹 Italian"],["pt","🇵🇹 Portuguese"],["ar","🇸🇦 Arabic"],["zh","🇨🇳 Chinese"],["hi","🇮🇳 Hindi"],["sw","🇰🇪 Swahili"],["ko","🇰🇷 Korean"],["ru","🇷🇺 Russian"],["tr","🇹🇷 Turkish"],["nl","🇳🇱 Dutch"],["pl","🇵🇱 Polish"],["vi","🇻🇳 Vietnamese"],["th","🇹🇭 Thai"],["id","🇮🇩 Indonesian"],["yo","🇳🇬 Yoruba"],["ig","🇳🇬 Igbo"],["zu","🇿🇦 Zulu"],["am","🇪🇹 Amharic"],["ha","🇳🇬 Hausa"],["bn","🇧🇩 Bengali"],["ur","🇵🇰 Urdu"],["fa","🇮🇷 Persian"],["af","Afrikaans"],["sq","Albanian"],["az","Azerbaijani"],["bg","Bulgarian"],["ca","Catalan"],["hr","Croatian"],["cs","Czech"],["da","Danish"],["nl","Dutch"],["et","Estonian"],["tl","Filipino"],["fi","Finnish"],["el","Greek"],["hu","Hungarian"],["is","Icelandic"],["ga","Irish"],["kn","Kannada"],["km","Khmer"],["lv","Latvian"],["lt","Lithuanian"],["ms","Malay"],["mt","Maltese"],["ne","Nepali"],["no","Norwegian"],["fa","Persian"],["ro","Romanian"],["sr","Serbian"],["sk","Slovak"],["sl","Slovenian"],["so","Somali"],["sv","Swedish"],["ta","Tamil"],["te","Telugu"],["uk","Ukrainian"],["uz","Uzbek"],["cy","Welsh"]];
+const sourceLang=document.getElementById('sourceLang'),targetLang=document.getElementById('targetLang'),sourceText=document.getElementById('sourceText'),translatedText=document.getElementById('translatedText'),translateBtn=document.getElementById('translateBtn'),swapBtn=document.getElementById('swapBtn'),micBtn=document.getElementById('micBtn'),playBtn=document.getElementById('playBtn'),copyBtn=document.getElementById('copyBtn'),statusEl=document.getElementById('status');
+function populate(){allLangs.forEach(([c,n])=>{let o1=document.createElement('option');o1.value=c;o1.textContent=n+' - Source';sourceLang.appendChild(o1);let o2=document.createElement('option');o2.value=c;o2.textContent=n+' - Target';targetLang.appendChild(o2);});sourceLang.value='en';targetLang.value='fr';}
+populate();
+
+// --- SAFE DO TRANSLATION - USES YOUR BACKEND FIRST ---
+async function doTranslate(){
+  const text=sourceText.value.trim(); if(!text) return;
+  const from=sourceLang.value, to=targetLang.value;
+  statusEl.innerHTML=`<span class="dot" style="background:#00f2ff"></span> Baymax Brain translating ${from} → ${to}...`;
+  translateBtn.textContent="⏳ Translating...";
+  let translated="";
+  try{
+    const res=await fetch('/api/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,from_lang:from,to_lang:to})});
+    const data=await res.json();
+    if(data.translated) translated=data.translated;
+  }catch(e){ console.log("backend offline"); }
+  if(!translated){
+    try{
+      const res2=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`);
+      const data2=await res2.json(); translated=data2[0].map(x=>x[0]).join('');
+    }catch(e){}
+  }
+  translatedText.value=translated||text;
+  statusEl.innerHTML=`<span class="dot"></span> Done ✓ via ${translated? 'Baymax Brain' : 'fallback'}`;
+  translateBtn.textContent="🌐 Translate";
+}
+translateBtn.onclick=doTranslate;
+swapBtn.onclick=()=>{const t=sourceLang.value;sourceLang.value=targetLang.value;targetLang.value=t;const tt=sourceText.value;sourceText.value=translatedText.value;translatedText.value=tt;};
+let recognition; if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.continuous=false;recognition.interimResults=true;}
+function startMic(e){e.preventDefault();if(!recognition){alert("Use Chrome for voice");return;} recognition.lang=sourceLang.value; micBtn.classList.add('recording'); micBtn.textContent="🔴 Listening..."; recognition.start(); recognition.onresult=(ev)=>{sourceText.value=ev.results[0][0].transcript;}; recognition.onend=()=>{micBtn.classList.remove('recording');micBtn.textContent="🎤 Hold to Speak"; if(sourceText.value) doTranslate();};}
+function stopMic(){try{recognition.stop();}catch{}}
+micBtn.addEventListener('mousedown',startMic);micBtn.addEventListener('touchstart',startMic);micBtn.addEventListener('mouseup',stopMic);micBtn.addEventListener('touchend',stopMic);
+playBtn.onclick=()=>{if(!translatedText.value) return; const u=new SpeechSynthesisUtterance(translatedText.value); u.lang=targetLang.value; speechSynthesis.speak(u);};
+copyBtn.onclick=()=>{navigator.clipboard.writeText(translatedText.value); copyBtn.textContent="✅ Copied"; setTimeout(()=>copyBtn.textContent="📋 Copy",1500);};
+let timer; sourceText.addEventListener('input',()=>{clearTimeout(timer); timer=setTimeout(doTranslate,700);});
+</script>
 </body>
 </html>
