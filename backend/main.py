@@ -40,6 +40,32 @@ if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w") as f:
         json.dump([], f)
 
+# --- NEW: SMART LANGUAGE PARSER ---
+LANG_MAP = {
+    "english": "en", "spanish": "es", "french": "fr", "chinese": "zh",
+    "german": "de", "japanese": "ja", "korean": "ko", "russian": "ru",
+    "arabic": "ar", "hindi": "hi", "portuguese": "pt", "italian": "it",
+    "dutch": "nl", "turkish": "tr", "swahili": "sw", "kinyarwanda": "rw"
+}
+
+def parse_lang(raw: str) -> str:
+    s = raw.lower().strip()
+    # if already like "en" or "zh"
+    if len(s) <= 5 and " " not in s and "-" not in s:
+        return s.split()[0][:2]
+    # search for known language name
+    for name, code in LANG_MAP.items():
+        if name in s:
+            return code
+    # fallback: try second word "GB English" -> "English"
+    parts = s.replace("-", " ").split()
+    for p in parts:
+        if p in LANG_MAP:
+            return LANG_MAP[p]
+        if len(p) == 2 and p.isalpha():
+            return p
+    return "en"
+
 @app.get("/api")
 def api_home():
     return {"status": "Baymax online - 100% round head"}
@@ -52,12 +78,15 @@ def chat(req: ChatRequest):
 @app.post("/api/translate")
 async def translate_text(req: TranslateRequest):
     try:
-        src = req.from_lang[:5].split('-')[0].strip().lower()
-        tgt = req.to_lang[:5].split('-')[0].strip().lower()
+        src = parse_lang(req.from_lang)
+        tgt = parse_lang(req.to_lang)
+        if src == tgt:
+            return {"translated": req.text, "source": src, "target": tgt}
         translated = GoogleTranslator(source=src, target=tgt).translate(req.text)
         return {"translated": translated, "source": src, "target": tgt}
     except Exception as e:
-        return {"error": str(e), "translated": req.text}
+        print(f"Translate error: {e}")
+        return {"error": str(e), "translated": f"Error: {e}"}
 
 @app.get("/api/languages")
 async def get_languages():
