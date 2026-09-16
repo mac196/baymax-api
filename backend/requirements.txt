@@ -3,4 +3,4 @@ uvicorn[standard]
 groq
 supabase
 python-dotenv
-deep-translator
+requests
