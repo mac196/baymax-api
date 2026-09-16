@@ -7,6 +7,7 @@ import json
 import os
 from datetime import datetime
 import requests
+import urllib.parse
 
 try:
     from llama_brain import get_baymax_reply
@@ -26,11 +27,9 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     message: str
-
 class PulseRequest(BaseModel):
     bpm: int
     user_id: str = "user"
-
 class TranslateRequest(BaseModel):
     text: str
     from_lang: str = "en"
@@ -50,7 +49,7 @@ LANG_MAP = {
 
 def parse_lang(raw: str) -> str:
     s = raw.lower().strip()
-    if "chinese" in s or s == "zh" or s == "cn" or "cn chinese" in s:
+    if "chinese" in s or s == "zh" or s == "cn":
         return "zh-CN"
     for name, code in LANG_MAP.items():
         if name in s:
@@ -62,32 +61,52 @@ def parse_lang(raw: str) -> str:
         if p == "zh":
             return "zh-CN"
     if len(s) <= 6 and " " not in s:
-        if s == "zh":
-            return "zh-CN"
+        if s == "zh": return "zh-CN"
         return s
     return "en"
 
 translation_cache = {}
 
 def translate_via_mymemory(text, src, tgt):
-    # MyMemory wants only 2-letter codes, zh-CN -> zh
     src_m = src.split('-')[0].lower()
     tgt_m = tgt.split('-')[0].lower()
-    if tgt_m == "zh":
-        tgt_m = "zh-CN"
-    url = f"https://api.mymemory.translated.net/get?q={requests.utils.quote(text)}&langpair={src_m}|{tgt_m}"
+    # add email to get higher quota
+    url = f"https://api.mymemory.translated.net/get?q={urllib.parse.quote(text)}&langpair={src_m}|{tgt_m}&de=baymax@health.com"
     r = requests.get(url, timeout=10)
-    data = r.json()
-    return data["responseData"]["translatedText"]
+    j = r.json()
+    trans = j["responseData"]["translatedText"]
+    # If MyMemory returns the limit message, raise error to trigger fallback
+    if "AVAILABLE FREE TRANSLATIONS" in trans or "MYMEMORY WARNING" in trans:
+        raise Exception("MyMemory limit")
+    return trans
+
+def translate_via_lingva(text, src, tgt):
+    # Lingva has NO LIMIT - totally free
+    src_m = src.split('-')[0].lower()
+    tgt_m = tgt.split('-')[0].lower()
+    # lingva uses zh not zh-CN
+    url = f"https://api.lingva.ml/api/v1/{src_m}/{tgt_m}/{urllib.parse.quote(text)}"
+    r = requests.get(url, timeout=10)
+    j = r.json()
+    return j["translation"]
+
+def translate_via_libre(text, src, tgt):
+    src_m = src.split('-')[0].lower()
+    tgt_m = tgt.split('-')[0].lower()
+    # libretranslate.de - free instance
+    url = "https://libretranslate.de/translate"
+    payload = {"q": text, "source": src_m, "target": tgt_m, "format": "text"}
+    r = requests.post(url, json=payload, timeout=10)
+    j = r.json()
+    return j["translatedText"]
 
 @app.get("/api")
 def api_home():
-    return {"status": "Baymax online - 100% round head"}
+    return {"status": "Baymax online"}
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    reply = get_baymax_reply(req.message)
-    return {"reply": reply}
+    return {"reply": get_baymax_reply(req.message)}
 
 @app.post("/api/translate")
 async def translate_text(req: TranslateRequest):
@@ -95,34 +114,55 @@ async def translate_text(req: TranslateRequest):
         src = parse_lang(req.from_lang)
         tgt = parse_lang(req.to_lang)
         text = req.text.strip()
-
-        if not text:
-            return {"translated": "", "source": src, "target": tgt}
-        if src == tgt:
-            return {"translated": text, "source": src, "target": tgt}
+        if not text: return {"translated": "", "source": src, "target": tgt}
+        if src == tgt: return {"translated": text, "source": src, "target": tgt}
 
         cache_key = f"{src}:{tgt}:{text.lower()}"
         if cache_key in translation_cache:
             return {"translated": translation_cache[cache_key], "source": src, "target": tgt}
 
         translated = None
-        # 1. Try MyMemory first (no rate limit)
+        errors = []
+
+        # 1. MyMemory
         try:
             translated = translate_via_mymemory(text, src, tgt)
         except Exception as e:
-            print(f"MyMemory failed: {e}, trying Google...")
-            # 2. Fallback to Google
-            translated = GoogleTranslator(source=src, target=tgt).translate(text)
+            errors.append(f"MyMemory: {e}")
+
+        # 2. Lingva (no limit) - BEST FALLBACK
+        if not translated:
+            try:
+                translated = translate_via_lingva(text, src, tgt)
+            except Exception as e:
+                errors.append(f"Lingva: {e}")
+
+        # 3. Libre
+        if not translated:
+            try:
+                translated = translate_via_libre(text, src, tgt)
+            except Exception as e:
+                errors.append(f"Libre: {e}")
+
+        # 4. Google last
+        if not translated:
+            try:
+                translated = GoogleTranslator(source=src, target=tgt).translate(text)
+            except Exception as e:
+                errors.append(f"Google: {e}")
+
+        if not translated:
+            raise Exception(" | ".join(errors))
 
         translation_cache[cache_key] = translated
-        if len(translation_cache) > 300:
+        if len(translation_cache) > 500:
             translation_cache.pop(next(iter(translation_cache)))
 
         return {"translated": translated, "source": src, "target": tgt}
 
     except Exception as e:
         print(f"Translate error: {e}")
-        return {"error": str(e), "translated": f"Translation failed, try again: {e}"}
+        return {"error": str(e), "translated": "Translation temporarily unavailable, try again in 2 sec"}
 
 @app.get("/api/languages")
 async def get_languages():
@@ -148,9 +188,7 @@ def get_pulse():
 def get_latest():
     with open(DATA_FILE, "r") as f:
         history = json.load(f)
-    if history:
-        return history[-1]
-    return {}
+    return history[-1] if history else {}
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 app.mount("/", StaticFiles(directory=BASE_DIR, html=True), name="frontend")
