@@ -2,10 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from deep_translator import GoogleTranslator, MyMemoryTranslator
+from deep_translator import GoogleTranslator
 import json
 import os
 from datetime import datetime
+import requests
 
 try:
     from llama_brain import get_baymax_reply
@@ -40,13 +41,11 @@ if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w") as f:
         json.dump([], f)
 
-# --- LANGUAGE PARSER ---
 LANG_MAP = {
     "english": "en", "spanish": "es", "french": "fr", "chinese": "zh-CN",
     "german": "de", "japanese": "ja", "korean": "ko", "russian": "ru",
     "arabic": "ar", "hindi": "hi", "portuguese": "pt", "italian": "it",
-    "dutch": "nl", "turkish": "tr", "swahili": "sw", "kinyarwanda": "rw",
-    "afrikaans": "af", "albanian": "sq", "amharic": "am"
+    "dutch": "nl", "turkish": "tr", "swahili": "sw", "kinyarwanda": "rw"
 }
 
 def parse_lang(raw: str) -> str:
@@ -68,8 +67,18 @@ def parse_lang(raw: str) -> str:
         return s
     return "en"
 
-# Cache to avoid rate limit
 translation_cache = {}
+
+def translate_via_mymemory(text, src, tgt):
+    # MyMemory wants only 2-letter codes, zh-CN -> zh
+    src_m = src.split('-')[0].lower()
+    tgt_m = tgt.split('-')[0].lower()
+    if tgt_m == "zh":
+        tgt_m = "zh-CN"
+    url = f"https://api.mymemory.translated.net/get?q={requests.utils.quote(text)}&langpair={src_m}|{tgt_m}"
+    r = requests.get(url, timeout=10)
+    data = r.json()
+    return data["responseData"]["translatedText"]
 
 @app.get("/api")
 def api_home():
@@ -94,43 +103,30 @@ async def translate_text(req: TranslateRequest):
 
         cache_key = f"{src}:{tgt}:{text.lower()}"
         if cache_key in translation_cache:
-            return {"translated": translation_cache[cache_key], "source": src, "target": tgt, "cached": True}
+            return {"translated": translation_cache[cache_key], "source": src, "target": tgt}
 
-        # Try Google first
+        translated = None
+        # 1. Try MyMemory first (no rate limit)
         try:
+            translated = translate_via_mymemory(text, src, tgt)
+        except Exception as e:
+            print(f"MyMemory failed: {e}, trying Google...")
+            # 2. Fallback to Google
             translated = GoogleTranslator(source=src, target=tgt).translate(text)
-        except Exception as google_err:
-            print(f"Google failed ({google_err}), trying MyMemory...")
-            try:
-                # MyMemory uses base codes like en, sw, zh-CN -> zh
-                src_mem = src.split('-')[0]
-                tgt_mem = tgt.split('-')[0]
-                if tgt_mem == "zh":
-                    tgt_mem = "zh-CN"
-                translated = MyMemoryTranslator(source=src_mem, target=tgt_mem).translate(text)
-            except Exception as mem_err:
-                print(f"MyMemory failed: {mem_err}")
-                raise google_err
 
         translation_cache[cache_key] = translated
-        if len(translation_cache) > 200:
+        if len(translation_cache) > 300:
             translation_cache.pop(next(iter(translation_cache)))
 
         return {"translated": translated, "source": src, "target": tgt}
 
     except Exception as e:
         print(f"Translate error: {e}")
-        err_str = str(e)
-        if "too many requests" in err_str.lower():
-            return {"error": err_str, "translated": "⚠️ Rate limit - wait 3 sec and try again. Now cached."}
-        return {"error": err_str, "translated": f"Error: {err_str}"}
+        return {"error": str(e), "translated": f"Translation failed, try again: {e}"}
 
 @app.get("/api/languages")
 async def get_languages():
-    try:
-        return {"languages": GoogleTranslator().get_supported_languages(as_dict=True)}
-    except:
-        return {"languages": ["en","fr","es","rw","ja","zh-CN","sw"]}
+    return {"languages": ["en","fr","es","rw","ja","zh-CN","sw"]}
 
 @app.post("/api/pulse")
 def save_pulse(req: PulseRequest):
@@ -140,7 +136,6 @@ def save_pulse(req: PulseRequest):
     history.append(entry)
     with open(DATA_FILE, "w") as f:
         json.dump(history[-100:], f, indent=2)
-    print(f"[SAVED] {req.bpm} BPM")
     return {"status": "saved", "entry": entry}
 
 @app.get("/api/pulse")
