@@ -44,44 +44,8 @@ def translate_unlimited(text, src, tgt):
     except:
         return text
 
-def describe_with_huggingface(image_bytes):
-    """Free fallback - works without any API key"""
-    try:
-        # Try BLIP large - no key needed, works anonymous
-        resp = requests.post(
-            "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large",
-            data=image_bytes,
-            timeout=20
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            if isinstance(data, list) and len(data)>0:
-                return data[0].get("generated_text", "")
-            if isinstance(data, dict) and "generated_text" in data:
-                return data["generated_text"]
-    except Exception as e:
-        print(f"HF BLIP failed: {e}")
-
-    try:
-        # Try Qwen VL as second fallback
-        hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN")
-        headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
-        # Use Qwen2-VL captioning via inference
-        resp = requests.post(
-            "https://api-inference.huggingface.co/models/Qwen/Qwen2-VL-2B-Instruct",
-            headers=headers,
-            data=image_bytes,
-            timeout=25
-        )
-        if resp.status_code == 200:
-            return str(resp.json())
-    except Exception as e:
-        print(f"HF Qwen failed: {e}")
-
-    return None
-
 @app.get("/api")
-def api_home(): return {"status":"Baymax online - HF Vision Fallback"}
+def api_home(): return {"status":"Baymax online - Vision Ready"}
 
 @app.post("/chat")
 def chat(req: ChatRequest): return {"reply": get_baymax_reply(req.message)}
@@ -98,36 +62,47 @@ async def translate_text(req: TranslateRequest):
 
 @app.post("/api/screen-analyze")
 async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
-    import requests, base64, os
     content = await file.read()
     b64 = base64.b64encode(content).decode()
     mime = file.content_type or "image/jpeg"
     target = parse_lang(lang)
 
-    key = os.getenv("GOOGLE_API_KEY") or os.getenv("OPENROUTER_KEY")
-    if not key:
-        return {"description":"❌ Add GOOGLE_API_KEY or OPENROUTER_KEY in Render"}
+    # FIXED: Check all possible env names you might use on Render
+    key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_KEY") or os.getenv("GOOGLE_API_KEY")
 
-    # OpenRouter free Gemini Flash
-    if key.startswith("sk-or-"):
-        url = "https://openrouter.ai/api/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {key}"}
-        payload = {
-            "model": "google/gemini-1.5-flash",
-            "messages": [{"role":"user","content":[
-                {"type":"text","text":f"You are Baymax. Analyze image in {target}. If Chinese shopping page, extract product, price, features. Be accurate."},
-                {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
-            ]}]
-        }
-        r = requests.post(url, headers=headers, json=payload, timeout=30).json()
-        text = r["choices"][0]["message"]["content"]
-        return {"description": text}
-    else:
-        # Direct Google
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
-        payload = {"contents":[{"parts":[{"text":f"Describe in {target}"},{"inline_data":{"mime_type":mime,"data":b64}}]}]}
-        r = requests.post(url, json=payload, timeout=30).json()
-        return {"description": r["candidates"][0]["content"]["parts"][0]["text"]}
+    if not key:
+        return {"description":"❌ Add OPENROUTER_API_KEY in Render > Environment"}
+
+    try:
+        # OpenRouter
+        if key.startswith("sk-or-"):
+            url = "https://openrouter.ai/api/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": "google/gemini-2.0-flash-001",
+                "messages": [{"role":"user","content":[
+                    {"type":"text","text":f"You are Baymax. Analyze image in {target}. If Chinese shopping page, extract product, price, features. Be accurate."},
+                    {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
+                ]}]
+            }
+            r = requests.post(url, headers=headers, json=payload, timeout=40).json()
+            if "choices" in r:
+                text = r["choices"][0]["message"]["content"]
+                return {"description": text}
+            else:
+                return {"description": f"OpenRouter error: {r}"}
+        else:
+            # Direct Google
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+            payload = {"contents":[{"parts":[{"text":f"Describe in {target}"},{"inline_data":{"mime_type":mime,"data":b64}}]}]}
+            r = requests.post(url, json=payload, timeout=30).json()
+            return {"description": r["candidates"][0]["content"]["parts"][0]["text"]}
+    except Exception as e:
+        return {"description": f"Vision error: {str(e)}"}
+
 @app.post("/api/pulse")
 def save_pulse(req: PulseRequest):
     entry={"bpm":req.bpm,"time":datetime.now().isoformat(),"user":req.user_id}
@@ -135,9 +110,11 @@ def save_pulse(req: PulseRequest):
     h.append(entry)
     with open(DATA_FILE,"w") as f: json.dump(h[-100:], f, indent=2)
     return {"status":"saved","entry":entry}
+
 @app.get("/api/pulse")
 def get_pulse():
     with open(DATA_FILE,"r") as f: return json.load(f)[::-1]
+
 @app.get("/api/pulse/latest")
 def get_latest():
     with open(DATA_FILE,"r") as f: h=json.load(f); return h[-1] if h else {}
