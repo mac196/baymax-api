@@ -60,21 +60,19 @@ async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
     mime = file.content_type or "image/jpeg"
 
     groq_key = os.getenv("GROQ_API_KEY")
-    print(f"GROQ KEY PRESENT: {bool(groq_key)}") # check Render logs
-
     if not groq_key:
-        return {"description": "ERROR: GROQ_API_KEY not found. Add it in Render > Environment AND make sure you saved."}
+        return {"description": "ERROR: GROQ_API_KEY not found."}
 
     try:
         r = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
             json={
-                "model": "meta-llama/llama-4-maverick-17b-128e-instruct",
+                "model": "meta-llama/llama-4-scout-17b-16e-instruct", # <- FIXED MODEL
                 "messages": [{
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": f"You are Baymax. Describe this image accurately in {target}. If Chinese shopping page, extract product name, price, features."},
+                        {"type": "text", "text": f"You are Baymax. Describe this image accurately in {target}. If it's a shopping page, extract product name, price, features."},
                         {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}
                     ]
                 }],
@@ -86,6 +84,21 @@ async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
         if "choices" in r:
             return {"description": r["choices"][0]["message"]["content"]}
         else:
+            # fallback to old llama vision model
+            r2 = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.2-11b-vision-preview",
+                    "messages": [{"role":"user","content":[
+                        {"type":"text","text":f"Describe in {target}"},
+                        {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
+                    ]}],
+                    "max_tokens": 800
+                }, timeout=45
+            ).json()
+            if "choices" in r2:
+                return {"description": r2["choices"][0]["message"]["content"]}
             return {"description": f"Groq error: {r}"}
     except Exception as e:
         return {"description": f"Exception: {str(e)}"}
