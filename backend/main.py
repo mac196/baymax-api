@@ -54,54 +54,33 @@ async def translate_text(req: TranslateRequest):
 
 @app.post("/api/screen-analyze")
 async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
+    import base64, os, requests
     content = await file.read()
-    target = parse_lang(lang)
     b64 = base64.b64encode(content).decode()
     mime = file.content_type or "image/jpeg"
+    target = lang[:5]
+    key = os.getenv("GROQ_API_KEY")
 
-    groq_key = os.getenv("GROQ_API_KEY")
-    if not groq_key:
-        return {"description": "ERROR: GROQ_API_KEY not found."}
-
-    try:
-        r = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-            json={
-                "model": "meta-llama/llama-4-scout-17b-16e-instruct", # <- FIXED MODEL
-                "messages": [{
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": f"You are Baymax. Describe this image accurately in {target}. If it's a shopping page, extract product name, price, features."},
-                        {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}
-                    ]
-                }],
-                "max_tokens": 800
-            },
-            timeout=45
-        ).json()
-
-        if "choices" in r:
-            return {"description": r["choices"][0]["message"]["content"]}
-        else:
-            # fallback to old llama vision model
-            r2 = requests.post(
+    for model in ["qwen/qwen3.6-27b", "qwen/qwen3-32b", "llama-3.2-11b-vision-preview"]:
+        try:
+            r = requests.post(
                 "https://api.groq.com/openai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
                 json={
-                    "model": "llama-3.2-11b-vision-preview",
+                    "model": model,
                     "messages": [{"role":"user","content":[
                         {"type":"text","text":f"Describe in {target}"},
                         {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
                     ]}],
-                    "max_tokens": 800
-                }, timeout=45
+                    "max_tokens": 600
+                },
+                timeout=30
             ).json()
-            if "choices" in r2:
-                return {"description": r2["choices"][0]["message"]["content"]}
-            return {"description": f"Groq error: {r}"}
-    except Exception as e:
-        return {"description": f"Exception: {str(e)}"}
+            if "choices" in r:
+                return {"description": r["choices"][0]["message"]["content"]}
+        except: continue
+
+    return {"description": f"All models failed, last response: {r}"}
 
 @app.post("/api/pulse")
 def save_pulse(req: PulseRequest):
