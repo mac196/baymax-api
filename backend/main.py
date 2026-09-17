@@ -82,7 +82,7 @@ async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
                 "Content-Type": "application/json"
             }
             payload = {
-                "model": "google/gemini-2.0-flash-001",
+                "model": "google/gemini-2.0-flash-exp:free",
                 "messages": [{"role":"user","content":[
                     {"type":"text","text":f"You are Baymax. Analyze image in {target}. If Chinese shopping page, extract product, price, features. Be accurate."},
                     {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
