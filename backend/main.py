@@ -98,65 +98,36 @@ async def translate_text(req: TranslateRequest):
 
 @app.post("/api/screen-analyze")
 async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
-    try:
-        content = await file.read()
-        b64 = base64.b64encode(content).decode()
-        mime = file.content_type or "image/jpeg"
-        prompt_lang = parse_lang(lang)
+    import requests, base64, os
+    content = await file.read()
+    b64 = base64.b64encode(content).decode()
+    mime = file.content_type or "image/jpeg"
+    target = parse_lang(lang)
 
-        # 1. Try Groq first (if it ever comes back)
-        api_key = os.getenv("GROQ_API_KEY")
-        if api_key:
-            try:
-                from groq import Groq
-                client = Groq(api_key=api_key.strip())
-                # Try the newest possible names
-                for model_name in ["llama/llama-4-scout-17b-16e-instruct", "qwen/qwen3-32b"]:
-                    try:
-                        resp = client.chat.completions.create(
-                            model=model_name,
-                            messages=[{"role":"user","content":[
-                                {"type":"text","text":f"Describe this image in {prompt_lang}, translate any visible text to {prompt_lang}. Be warm like Baymax."},
-                                {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
-                            ]}],
-                            max_tokens=600
-                        )
-                        desc = resp.choices[0].message.content
-                        if desc: return {"description": desc}
-                    except: continue
-            except Exception as e:
-                print(f"Groq failed, falling back: {e}")
+    key = os.getenv("GOOGLE_API_KEY") or os.getenv("OPENROUTER_KEY")
+    if not key:
+        return {"description":"❌ Add GOOGLE_API_KEY or OPENROUTER_KEY in Render"}
 
-        # 2. FALLBACK - HuggingFace BLIP (FREE, NO KEY, NEVER 404)
-        hf_desc = describe_with_huggingface(content)
-
-        if hf_desc:
-            # Enhance the short caption to Baymax style
-            enhanced = f"👁️ I see: {hf_desc}.\n\n"
-            # Add context based on image content
-            lower = hf_desc.lower()
-            if "apple" in lower or "fruit" in lower:
-                enhanced += "🍎 Looks like fresh Fuji apples being held in a market. I can see a tiled floor with a green emergency exit arrow in the background with Chinese/Japanese characters.\n\nWant me to estimate calories or give you nutrition info?"
-            elif "coffee" in lower or "cup" in lower or "drink" in lower:
-                enhanced += "☕ A hand holding an iced coffee/drink outdoors. Perfect for a refresh!\n\nWant me to estimate sugar/caffeine?"
-            else:
-                enhanced += f"Baymax sees {hf_desc}. If there's text in another language, tell me what language you want translated to.\n\nTry asking: 'What's in this photo?' or 'Translate any text you see'"
-
-            # Translate enhanced if needed
-            if prompt_lang!= "en":
-                try:
-                    enhanced = translate_unlimited(enhanced, "en", prompt_lang)
-                except: pass
-
-            return {"description": enhanced}
-        else:
-            # Ultimate fallback - still describe something
-            return {"description": "👁️ Baymax sees your image (a hand holding two red apples in what looks like a supermarket aisle with white tiled floor and a green exit sign with arrow). The free vision service is loading - please try again in 10 seconds, it warms up on first request.\n\nTip: Add a free HuggingFace token in Render > Environment > HF_TOKEN to make it instant."}
-
-    except Exception as e:
-        import traceback; traceback.print_exc()
-        return {"description": f"Vision error: {e}. Please try again."}
-
+    # OpenRouter free Gemini Flash
+    if key.startswith("sk-or-"):
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {key}"}
+        payload = {
+            "model": "google/gemini-1.5-flash",
+            "messages": [{"role":"user","content":[
+                {"type":"text","text":f"You are Baymax. Analyze image in {target}. If Chinese shopping page, extract product, price, features. Be accurate."},
+                {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
+            ]}]
+        }
+        r = requests.post(url, headers=headers, json=payload, timeout=30).json()
+        text = r["choices"][0]["message"]["content"]
+        return {"description": text}
+    else:
+        # Direct Google
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+        payload = {"contents":[{"parts":[{"text":f"Describe in {target}"},{"inline_data":{"mime_type":mime,"data":b64}}]}]}
+        r = requests.post(url, json=payload, timeout=30).json()
+        return {"description": r["candidates"][0]["content"]["parts"][0]["text"]}
 @app.post("/api/pulse")
 def save_pulse(req: PulseRequest):
     entry={"bpm":req.bpm,"time":datetime.now().isoformat(),"user":req.user_id}
