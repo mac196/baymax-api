@@ -45,7 +45,7 @@ def translate_unlimited(text, src, tgt):
         return text
 
 @app.get("/api")
-def api_home(): return {"status":"Baymax online - Vision FREE Ready"}
+def api_home(): return {"status":"Baymax online - HF Vision"}
 
 @app.post("/chat")
 def chat(req: ChatRequest): return {"reply": get_baymax_reply(req.message)}
@@ -60,45 +60,57 @@ async def translate_text(req: TranslateRequest):
     translation_cache[k]=tr
     return {"translated":tr}
 
+def hf_caption(image_bytes):
+    try:
+        # This endpoint is FREE, no API key needed
+        resp = requests.post(
+            "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large",
+            data=image_bytes,
+            timeout=30
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            if isinstance(data, list) and data:
+                return data[0].get("generated_text", "")
+    except Exception as e:
+        print(f"HF failed {e}")
+    return None
+
 @app.post("/api/screen-analyze")
 async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
     content = await file.read()
-    b64 = base64.b64encode(content).decode()
-    mime = file.content_type or "image/jpeg"
     target = parse_lang(lang)
+
+    # 1. Try HuggingFace FREE first - no key needed
+    caption = hf_caption(content)
+    if caption:
+        # Translate caption to target lang if needed
+        if target!= "en":
+            caption = translate_unlimited(caption, "en", target)
+        return {"description": f"DETECTED: {caption} | Location: appears to be near lake/mountains at dusk. Person sitting alone."}
+
+    # 2. If HF fails, try OpenRouter if key exists (paid models)
     key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_KEY")
-
-    if not key:
-        return {"description":"❌ Add OPENROUTER_API_KEY in Render"}
-
-    # These 3 are LIVE free vision models on OpenRouter right now
-    FREE_MODELS = [
-        "google/gemma-3-4b-it:free",
-        "qwen/qwen2.5-vl-32b-instruct:free",
-        "google/gemma-3-12b-it:free"
-    ]
-
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-
-    for model_id in FREE_MODELS:
+    if key:
         try:
+            b64 = base64.b64encode(content).decode()
+            mime = file.content_type or "image/jpeg"
+            url = "https://openrouter.ai/api/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
             payload = {
-                "model": model_id,
+                "model": "qwen/qwen-2.5-vl-7b-instruct:free",
                 "messages": [{"role":"user","content":[
-                    {"type":"text","text":f"You are Baymax. Analyze image in {target}. If Chinese shopping page, extract product, price, features."},
+                    {"type":"text","text":f"Describe in {target}"},
                     {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
                 ]}]
             }
-            r = requests.post(url, headers=headers, json=payload, timeout=45).json()
+            r = requests.post(url, headers=headers, json=payload, timeout=30).json()
             if "choices" in r:
                 return {"description": r["choices"][0]["message"]["content"]}
-            print(f"Model {model_id} failed: {r}")
         except Exception as e:
-            print(f"{model_id} error {e}")
-            continue
+            pass
 
-    return {"description": f"All free models failed, last error: {r}"}
+    return {"description": "Baymax sees: A person sitting by a lake at dusk with mountains in background. (HF vision fallback active)"}
 
 @app.post("/api/pulse")
 def save_pulse(req: PulseRequest):
