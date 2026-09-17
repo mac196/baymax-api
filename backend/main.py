@@ -45,7 +45,7 @@ def translate_unlimited(text, src, tgt):
         return text
 
 @app.get("/api")
-def api_home(): return {"status":"Baymax online - Vision Ready"}
+def api_home(): return {"status":"Baymax online - Vision FREE Ready"}
 
 @app.post("/chat")
 def chat(req: ChatRequest): return {"reply": get_baymax_reply(req.message)}
@@ -67,39 +67,41 @@ async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
     mime = file.content_type or "image/jpeg"
     target = parse_lang(lang)
 
-    # FIXED: Check all possible env names you might use on Render
     key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_KEY") or os.getenv("GOOGLE_API_KEY")
 
     if not key:
         return {"description":"❌ Add OPENROUTER_API_KEY in Render > Environment"}
 
     try:
-        # OpenRouter
-        if key.startswith("sk-or-"):
-            url = "https://openrouter.ai/api/v1/chat/completions"
-            headers = {
-                "Authorization": f"Bearer {key}",
-                "Content-Type": "application/json"
-            }
-            payload = {
-                "model": "google/gemini-2.5-flash",
-                "messages": [{"role":"user","content":[
-                    {"type":"text","text":f"You are Baymax. Analyze image in {target}. If Chinese shopping page, extract product, price, features. Be accurate."},
+        # FREE MODEL - works with 0 credits
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "google/gemma-3-27b-it:free",
+            "messages": [{
+                "role":"user",
+                "content":[
+                    {"type":"text","text":f"You are Baymax. Analyze image in {target}. If Chinese shopping page, extract product name, price, features. Be accurate and helpful."},
                     {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
-                ]}]
-            }
+                ]
+            }]
+        }
+        r = requests.post(url, headers=headers, json=payload, timeout=40).json()
+
+        if "choices" in r and len(r["choices"]) > 0:
+            text = r["choices"][0]["message"]["content"]
+            return {"description": text}
+        else:
+            # Fallback to another free model if first fails
+            payload["model"] = "meta-llama/llama-3.2-11b-vision-instruct:free"
             r = requests.post(url, headers=headers, json=payload, timeout=40).json()
             if "choices" in r:
-                text = r["choices"][0]["message"]["content"]
-                return {"description": text}
-            else:
-                return {"description": f"OpenRouter error: {r}"}
-        else:
-            # Direct Google
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
-            payload = {"contents":[{"parts":[{"text":f"Describe in {target}"},{"inline_data":{"mime_type":mime,"data":b64}}]}]}
-            r = requests.post(url, json=payload, timeout=30).json()
-            return {"description": r["candidates"][0]["content"]["parts"][0]["text"]}
+                return {"description": r["choices"][0]["message"]["content"]}
+            return {"description": f"Vision error: {r}"}
+
     except Exception as e:
         return {"description": f"Vision error: {str(e)}"}
 
