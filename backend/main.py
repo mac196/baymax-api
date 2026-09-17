@@ -66,44 +66,39 @@ async def screen_analyze(file: UploadFile = File(...), lang: str = "en"):
     b64 = base64.b64encode(content).decode()
     mime = file.content_type or "image/jpeg"
     target = parse_lang(lang)
-
-    key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_KEY") or os.getenv("GOOGLE_API_KEY")
+    key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_KEY")
 
     if not key:
-        return {"description":"❌ Add OPENROUTER_API_KEY in Render > Environment"}
+        return {"description":"❌ Add OPENROUTER_API_KEY in Render"}
 
-    try:
-        # FREE MODEL - works with 0 credits
-        url = "https://openrouter.ai/api/v1/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {key}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "model": "google/gemma-3-27b-it:free",
-            "messages": [{
-                "role":"user",
-                "content":[
-                    {"type":"text","text":f"You are Baymax. Analyze image in {target}. If Chinese shopping page, extract product name, price, features. Be accurate and helpful."},
+    # These 3 are LIVE free vision models on OpenRouter right now
+    FREE_MODELS = [
+        "google/gemma-3-4b-it:free",
+        "qwen/qwen2.5-vl-32b-instruct:free",
+        "google/gemma-3-12b-it:free"
+    ]
+
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+
+    for model_id in FREE_MODELS:
+        try:
+            payload = {
+                "model": model_id,
+                "messages": [{"role":"user","content":[
+                    {"type":"text","text":f"You are Baymax. Analyze image in {target}. If Chinese shopping page, extract product, price, features."},
                     {"type":"image_url","image_url":{"url":f"data:{mime};base64,{b64}"}}
-                ]
-            }]
-        }
-        r = requests.post(url, headers=headers, json=payload, timeout=40).json()
-
-        if "choices" in r and len(r["choices"]) > 0:
-            text = r["choices"][0]["message"]["content"]
-            return {"description": text}
-        else:
-            # Fallback to another free model if first fails
-            payload["model"] = "meta-llama/llama-3.2-11b-vision-instruct:free"
-            r = requests.post(url, headers=headers, json=payload, timeout=40).json()
+                ]}]
+            }
+            r = requests.post(url, headers=headers, json=payload, timeout=45).json()
             if "choices" in r:
                 return {"description": r["choices"][0]["message"]["content"]}
-            return {"description": f"Vision error: {r}"}
+            print(f"Model {model_id} failed: {r}")
+        except Exception as e:
+            print(f"{model_id} error {e}")
+            continue
 
-    except Exception as e:
-        return {"description": f"Vision error: {str(e)}"}
+    return {"description": f"All free models failed, last error: {r}"}
 
 @app.post("/api/pulse")
 def save_pulse(req: PulseRequest):
@@ -112,11 +107,9 @@ def save_pulse(req: PulseRequest):
     h.append(entry)
     with open(DATA_FILE,"w") as f: json.dump(h[-100:], f, indent=2)
     return {"status":"saved","entry":entry}
-
 @app.get("/api/pulse")
 def get_pulse():
     with open(DATA_FILE,"r") as f: return json.load(f)[::-1]
-
 @app.get("/api/pulse/latest")
 def get_latest():
     with open(DATA_FILE,"r") as f: h=json.load(f); return h[-1] if h else {}
