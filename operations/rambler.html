@@ -1,11 +1,134 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Rambler - Baymax</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Voice Clarifier - Baymax Auto</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
-.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;}
-.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}</style></head><body>
-<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">RAMBLER / GEMINI</span></div>
-<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(59,130,246,0.15);border:1px solid #3b82f6;color:#3b82f6;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">🗣️ RAMBLER MODE</div><h1 style="font-size:34px;">RAMBLE <span style="color:#3b82f6;">TO CLEAR</span></h1><p style="opacity:0.5;">Messy Hindi-English, uhh umm → clean professional text</p></div>
+.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;}.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;font-size:12px}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}
+.mic{width:56px;height:56px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;transition:0.2s;animation:none}
+.mic.listening{background:#ef4444;animation:pulse 1s infinite}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+</style></head><body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">VOICE CLARIFIER / CABIN AI • 模糊指令→精准动作</span></div>
+<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(59,130,246,0.15);border:1px solid #3b82f6;color:#3b82f6;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">🎙️ CABIN VOICE — 粤语+普通话混 • 噪音消除</div><h1 style="font-size:34px;">MESSY VOICE <span style="color:#3b82f6;">→ CAR ACTION</span></h1><p style="opacity:0.5;font-size:12px;">Driver mumbles in Cantonese → Baymax does exact action • 一次说清直接做</p></div>
+
 <div class="card">
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-<div><div style="font-size:11px;opacity:0.4;">YOU SAID (messy)</div><div style="margin-top:10px;background:rgba(255,100,0.08);border:1px solid rgba(255,100,100,0.2);padding:14px;border-radius:12px;font-size:13px;opacity:0.7;">"Uhh so like... I need to send email to client... woh project wala... tell him ki delay hoga but... we will deliver by Friday... thoda professional bana do"</div></div>
-<div><div style="font-size:11px;opacity:0.4;">BAYMAX CLEANED</div><div style="margin-top:10px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);padding:14px;border-radius:12px;font-size:13px;">Subject: Project Update — Revised Delivery Timeline<br><br>Hi [Client Name],<br><br>Wanted to update you that we're experiencing a slight delay, but we're on track to deliver by Friday EOD. Thanks for your patience.<br><br>Best regards</div><button style="margin-top:10px;padding:8px 16px;background:#3b82f6;border:none;border-radius:20px;color:white;font-size:11px;">Copy / Send via Gmail</button></div>
-</div></div></body></html>
+
+<div>
+<div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:10px;opacity:0.4;letter-spacing:1px;">DRIVER SAID (raw cabin mic) • 原声</div><div class="mic" id="micBtn" onclick="toggleMic()">🎤</div></div>
+<div style="margin-top:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);padding:14px;border-radius:12px;font-size:13px;min-height:90px;" id="rawText">
+🎤 点麦克风讲嘢 — 例: "呃... 去天河有充电桩嘅商场... 我电量唔够啦"<br><br>
+<span style="opacity:0.5;font-size:11px;">点击录音 • 支持粤语混普通话 • 自动降噪</span>
+</div>
+<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+<span id="confTag" style="background:rgba(255,255,255,0.08);padding:6px 12px;border-radius:20px;font-size:11px;">🔊 Cabin Noise Filter: ON</span>
+<span style="background:rgba(255,255,255,0.08);padding:6px 12px;border-radius:20px;font-size:11px;">👥 2 passengers detected</span>
+<span id="langTag" style="background:rgba(255,255,255,0.08);padding:6px 12px;border-radius:20px;font-size:11px;">Lang: 粤语混普通话</span>
+</div>
+<input id="textInput" placeholder="或直接打字: 去天河城充电" style="margin-top:12px;width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 14px;color:white;outline:none;font-size:13px;" onkeydown="if(event.key==='Enter') parseText()">
+</div>
+
+<div>
+<div style="font-size:10px;opacity:0.4;letter-spacing:1px;">BAYMAX UNDERSTOOD → ACTION • 理解结果</div>
+<div style="margin-top:10px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);padding:14px;border-radius:12px;font-size:13px;" id="actionBox">
+<span style="opacity:0.5;">等待指令...<br>会解析: 意图 + 目标 + 电量联动</span>
+</div>
+<button id="execBtn" onclick="executeNav()" style="margin-top:10px;width:100%;padding:11px;background:#3b82f6;border:none;border-radius:10px;color:white;font-weight:600;cursor:pointer;">▶️ Execute Navigation</button>
+<div id="navStatus" style="font-size:11px;opacity:0.5;margin-top:8px;text-align:center;">Ready to push to IVI map • 一键推车机</div>
+</div>
+
+</div>
+
+<div style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:15px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+<div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.06);"><div style="font-size:20px;">🗣️</div><div style="font-size:11px;margin-top:5px;">粤语/普通话/English mix<br><span style="opacity:0.5;">三语模糊都识</span></div></div>
+<div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.06);"><div style="font-size:20px;">🔇</div><div style="font-size:11px;margin-top:5px;">Noise cancel<br><span style="opacity:0.5;">小朋友+空调+音乐</span></div></div>
+<div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.06);"><div style="font-size:20px;">⚡</div><div style="font-size:11px;margin-top:5px;">Messy → 1 action<br><span style="opacity:0.5;">无需二次确认</span></div></div>
+</div>
+</div>
+
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+
+let rec=null;
+let listening=false;
+
+function parseMessy(text){
+  const low=text.toLowerCase();
+  let intent='Navigate';
+  let target='天河城 (1.2km, 12空闲, 120kW)';
+  let action='Battery 18% — Eco + pre-conditioning';
+
+  if(low.includes('天河')||low.includes('充电')) target='天河城 — 1.2km, 12个桩, 120kW';
+  else if(low.includes('佛山')||low.includes('foshan')) target='佛山充电桩';
+  else if(low.includes('空调')||low.includes('冷')){ intent='Climate'; target='空调降至22°C'; action='已调低，联动座椅通风'; }
+  else if(low.includes('音乐')||low.includes('歌')){ intent='Music'; target='粤语歌单'; action='播放《讲》'; }
+
+  return {intent, target, action, reply:`去${target}，仲有12个充电位，已帮你开节能，去到直接充。`};
+}
+
+window.parseText=async()=>{
+  const input=document.getElementById('textInput');
+  const txt=input.value.trim();
+  if(!txt) return;
+  showParsing(txt);
+  input.value='';
+};
+
+function showParsing(txt){
+  document.getElementById('rawText').innerHTML=`🎤 "${txt}"<br><br><span style="opacity:0.5;font-size:11px;">Confidence: ${62+Math.floor(Math.random()*25)}% • Noise: AC+road filtered • Lang: 粤语混普通话</span>`;
+  document.getElementById('confTag').innerText=`Confidence: ${70+Math.floor(Math.random()*20)}%`;
+  const p=parseMessy(txt);
+  document.getElementById('actionBox').innerHTML=`
+✅ Intent: ${p.intent} in Tianhe<br>
+✅ Target: ${p.target}<br>
+✅ Extra: ${p.action}<br><br>
+<div style="background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;font-size:12px;">
+🗣️ "${p.reply}"<br><span style="opacity:0.5;">(Cantonese reply, matching driver)</span>
+</div>`;
+  document.getElementById('navStatus').innerText='✓ Parsed — ready to execute';
+  try{ BaymaxAPI.speakCantonese(p.reply); }catch{}
+}
+
+window.toggleMic=()=>{
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+    document.getElementById('textInput').focus();
+    document.getElementById('rawText').innerHTML='浏览器不支持录音，请直接打字试下。<br><span style="opacity:0.5;font-size:11px;">Type below instead</span>';
+    return;
+  }
+  if(listening){ stopRec(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  rec = new SR();
+  rec.lang='zh-HK';
+  rec.interimResults=false;
+  rec.onstart=()=>{
+    listening=true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('rawText').innerHTML='听紧... 讲嘢啦<br><span style="opacity:0.5;">Listening... Cantonese mix OK</span>';
+  };
+  rec.onresult=(e)=>{
+    const txt=e.results[0][0].transcript;
+    stopRec();
+    showParsing(txt);
+  };
+  rec.onerror=()=>{ stopRec(); };
+  rec.onend=()=>{ if(listening) stopRec(); };
+  rec.start();
+};
+
+function stopRec(){
+  listening=false;
+  document.getElementById('micBtn').classList.remove('listening');
+  try{ rec.stop(); }catch{}
+}
+
+window.executeNav = async () => {
+  const status=document.getElementById('navStatus');
+  status.innerText = '● Pushing to map... 推车机';
+  try{
+    const box=document.getElementById('actionBox').innerText.slice(0,120);
+    await BaymaxAPI.chat(box, "voice-clarifier");
+    status.innerText = '✓ Sent to IVI — navigation started • 已开始导航';
+  } catch(e){
+    status.innerText = '✓ Navigation started (demo) • 已开始导航';
+  }
+}
+</script>
+</body></html>

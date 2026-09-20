@@ -3,66 +3,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Baymax Super OS - 20 Features</title>
+<title>Baymax Auto OS - 14 Systems</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
 body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:35px 20px;}
-.header{text-align:center;margin-bottom:35px;}
-.h1{font-size:50px;letter-spacing:4px;font-weight:900;} .h1 span{color:#00f2ff;text-shadow:0 0 20px #00f2ff;}
-.sub{opacity:0.6;margin-top:10px;font-size:15px;}
-.badges{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
-.badge{padding:6px 14px;border-radius:20px;font-size:10px;letter-spacing:1px;font-weight:700;border:1px solid;}
+.header{text-align:center;margin-bottom:32px;width:100%;max-width:1160px;}
+.h1{font-size:48px;letter-spacing:4px;font-weight:900;} .h1 span{color:#00f2ff;text-shadow:0 0 20px #00f2ff;}
+.sub{opacity:0.6;margin-top:10px;font-size:13px;}
+.badges{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.badge{padding:5px 12px;border-radius:20px;font-size:9px;letter-spacing:1px;font-weight:700;border:1px solid;}
 .b-cyan{background:rgba(0,242,255,0.1);border-color:#00f2ff;color:#00f2ff;} .b-green{background:rgba(0,255,136,0.1);border-color:#00ff88;color:#00ff88;} .b-purple{background:rgba(168,85,247,0.1);border-color:#a855f7;color:#a855f7;}
-.baymax-face{width:130px;height:130px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 50px rgba(0,242,255,0.5);animation:float 3s ease-in-out infinite;position:relative;}
-.eyes{display:flex;gap:40px;} .eye{width:18px;height:22px;background:#0a0a0a;border-radius:50%;}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;width:1150px;max-width:96%;}
-.section{grid-column:1/-1;margin:28px 0 8px 0;font-size:11px;letter-spacing:2px;opacity:0.35;font-weight:800;display:flex;align-items:center;gap:10px;}
+.baymax-face{width:110px;height:110px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:0 0 40px rgba(0,242,255,0.5);animation:float 3s ease-in-out infinite;cursor:pointer;}
+.eyes{display:flex;gap:32px;} .eye{width:16px;height:20px;background:#0a0a0a;border-radius:50%;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:1160px;max-width:96%;}
+.section{grid-column:1/-1;margin:22px 0 6px 0;font-size:10px;letter-spacing:2px;opacity:0.35;font-weight:800;display:flex;align-items:center;gap:10px;}
 .section::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1);}
-.card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:20px;transition:0.3s;text-decoration:none;color:white;display:block;position:relative;overflow:hidden;backdrop-filter:blur(10px);}
-.card:hover{transform:translateY(-6px) scale(1.02);}
-.card .ic{font-size:32px;margin-bottom:10px;} .card h3{font-size:15px;margin-bottom:5px;} .card p{opacity:0.5;font-size:11.5px;line-height:1.4;min-height:32px;}
-.tag{font-size:8px;font-weight:800;padding:3px 8px;border-radius:20px;margin-top:10px;display:inline-block;letter-spacing:0.5px;}
-.c1:hover{border-color:#00f2ff;box-shadow:0 8px 30px rgba(0,242,255,0.2);} .c2:hover{border-color:#a855f7;box-shadow:0 8px 30px rgba(168,85,247,0.2);} .c3:hover{border-color:#3b82f6;box-shadow:0 8px 30px rgba(59,130,246,0.2);} .c4:hover{border-color:#ec4899;box-shadow:0 8px 30px rgba(236,72,153,0.2);} .c5:hover{border-color:#22c55e;box-shadow:0 8px 30px rgba(34,197,94,0.2);} .c6:hover{border-color:#ff9600;box-shadow:0 8px 30px rgba(255,150,0,0.2);} .c7:hover{border-color:#ef4444;box-shadow:0 8px 30px rgba(239,68,68,0.2);}
-.footer{margin-top:40px;opacity:0.25;font-size:10px;letter-spacing:1px;text-align:center;}
-@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr);width:900px}}
-@media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr);width:95%}}
-@media(max-width:500px){.grid{grid-template-columns:1fr;}}
+.card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:18px;transition:0.25s;text-decoration:none;color:white;display:block;position:relative;overflow:hidden;}
+.card:hover{transform:translateY(-5px) scale(1.02);border-color:#00f2ff;box-shadow:0 10px 30px rgba(0,242,255,0.15);}
+.card .ic{font-size:28px;margin-bottom:8px;} .card h3{font-size:13.5px;margin-bottom:4px;} .card p{opacity:0.5;font-size:11px;line-height:1.4;min-height:28px;}
+.tag{font-size:7.5px;font-weight:800;padding:3px 7px;border-radius:20px;margin-top:8px;display:inline-block;}
+.input-bar{width:700px;max-width:90%;margin-top:18px;display:flex;gap:8px;}
+.input-bar input{flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);padding:14px 18px;border-radius:24px;color:white;outline:none;font-size:13px;}
+.input-bar button{padding:14px 22px;background:#00f2ff;border:none;border-radius:24px;font-weight:800;color:black;cursor:pointer;}
+.footer{margin-top:36px;opacity:0.25;font-size:9px;letter-spacing:1px;text-align:center;}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}} @media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr)}} @media(max-width:500px){.grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 <div class="header">
-<div class="baymax-face"><div class="eyes"><div class="eye"></div><div class="eye"></div></div></div>
-<div class="h1">BAY<span>MAX</span> SUPER OS</div>
-<div class="sub">20 Features — Better than ChatGPT + Gemini + Apple + Samsung Combined</div>
-<div class="badges"><span class="badge b-cyan">20 SYSTEMS ONLINE</span><span class="badge b-green">MEMORY SYNCED</span><span class="badge b-purple">FRONTEND v1.5 LOCKED</span></div>
+<div class="baymax-face" onclick="BaymaxAPI.speakCantonese('你好，我系Baymax，广州通勤专家，14个系统已经上线')"><div class="eyes"><div class="eye"></div><div class="eye"></div></div></div>
+<div class="h1">BAY<span>MAX</span> AUTO OS</div>
+<div class="sub">14 Systems — Smart Cockpit for Guangzhou OEMs • 粤语 95% • <span id="apiStatus">Checking API...</span></div>
+<div class="badges"><span class="badge b-cyan">14 SYSTEMS ONLINE</span><span class="badge b-green">CANTONESE FIRST</span><span class="badge b-purple">GAC / XPENG READY</span></div>
+<div class="input-bar">
+<input id="hubInput" placeholder="讲粤语: 去天河城最快 / 仲有几多电 / BB喺后排未?">
+<button id="hubSend">问 Baymax</button>
+</div>
 </div>
 
 <div class="grid">
-<div class="section">CORE 7 PILLARS — YOUR ORIGINAL VISION</div>
-<a href="operations/translation.html" class="card c1"><div class="ic">🌐</div><h3>Translation</h3><p>Real-time voice & text</p><span class="tag" style="background:#00f2ff;color:black;">OPERATIONAL</span></a>
-<a href="operations/power.html" class="card c6"><div class="ic">⚡</div><h3>Power Actions</h3><p>Video, thumbs, research</p><span class="tag" style="background:#ff9600;color:black;">UI READY</span></a>
-<a href="operations/memory.html" class="card c2"><div class="ic">🧠</div><h3>Memory Core</h3><p>Remembers you forever</p><span class="tag" style="background:#a855f7;color:white;">PILLAR 1</span></a>
-<a href="operations/daily.html" class="card c3"><div class="ic">📅</div><h3>Daily Manager</h3><p>Briefing + bookings</p><span class="tag" style="background:#3b82f6;color:white;">PILLAR 2</span></a>
-<a href="operations/chat.html" class="card c4"><div class="ic">💬</div><h3>Companion Chat</h3><p>Emotional + continuous</p><span class="tag" style="background:#ec4899;color:white;">PILLAR 3</span></a>
-<a href="operations/voice.html" class="card c5"><div class="ic">🎙️</div><h3>Voice & Presence</h3><p>Wake-up calls, screening</p><span class="tag" style="background:#22c55e;color:black;">PILLAR 4</span></a>
-<a href="operations/health.html" class="card c7"><div class="ic">❤️</div><h3>Health Tracker</h3><p>Sleep, mood, burnout</p><span class="tag" style="background:#ef4444;color:white;">PILLAR 2B</span></a>
-<a href="operations/privacy.html" class="card c1"><div class="ic">🔒</div><h3>Privacy Vault</h3><p>Secure VM + vault</p><span class="tag" style="background:#6b7280;color:white;">PILLAR 6</span></a>
+<div class="section">CORE COCKPIT — VOICE + DMS • 法规必备</div>
+<a href="voice.html" class="card"><div class="ic">🎙️</div><h3>Live Voice</h3><p>免唤醒 + 4 mic声区 粤语打断</p><span class="tag" style="background:#00f2ff;color:black;">CORE • KEEP</span></a>
+<a href="voice.html" class="card"><div class="ic">🌐</div><h3>Cabin Voice</h3><p>粤语/普通话/English Tri-lingual</p><span class="tag" style="background:#22c55e;color:black;">CORE • KEEP</span></a>
+<a href="screen.html" class="card"><div class="ic">👁️</div><h3>Driver Monitoring</h3><p>疲劳、分心、手机、DMS国标</p><span class="tag" style="background:#ef4444;color:white;">法规 • KEEP</span></a>
+<a href="child.html" class="card"><div class="ic">👶</div><h3>Child Protection</h3><p>毫米波CPD • 遗留报警开空调</p><span class="tag" style="background:#ef4444;color:white;">法规 • KEEP</span></a>
 
-<div class="section">12 SUPERPOWERS — FROM GEMINI, CHATGPT, APPLE, SAMSUNG</div>
-<a href="operations/pulse.html" class="card c3"><div class="ic">🌅</div><h3>Pulse Morning</h3><p>Overnight cards like ChatGPT Pulse</p><span class="tag" style="background:#3b82f6;color:white;">NEW • CHATGPT</span></a>
-<a href="operations/dreaming.html" class="card c2"><div class="ic">💭</div><h3>Dreaming Memory</h3><p>Auto-curates, summary page</p><span class="tag" style="background:#a855f7;color:white;">NEW • GPT-6</span></a>
-<a href="operations/presence.html" class="card c4"><div class="ic">👤</div><h3>Named Avatar</h3><p>Name, voice, humor, face</p><span class="tag" style="background:#ec4899;color:white;">NEW • PRESENCE</span></a>
-<a href="operations/screen.html" class="card c1"><div class="ic">👁️</div><h3>Screen Awareness</h3><p>"What am I looking at?"</p><span class="tag" style="background:#00f2ff;color:black;">NEW • APPLE</span></a>
-<a href="operations/action.html" class="card c5"><div class="ic">🛒</div><h3>Screen-to-Action</h3><p>List → cart, brochure → trip</p><span class="tag" style="background:#22c55e;color:black;">NEW • GEMINI</span></a>
-<a href="operations/calls.html" class="card c6"><div class="ic">📞</div><h3>Scheduled Calls</h3><p>"Call me at 6AM" actually calls</p><span class="tag" style="background:#ff9600;color:black;">NEW • KINTORA</span></a>
-<a href="operations/rambler.html" class="card c3"><div class="ic">🗣️</div><h3>Rambler Mode</h3><p>Messy speech → clean text</p><span class="tag" style="background:#3b82f6;color:white;">NEW • GEMINI</span></a>
-<a href="operations/widgets.html" class="card c2"><div class="ic">🧩</div><h3>Widget Builder</h3><p>"Build meal tracker" → widget</p><span class="tag" style="background:#a855f7;color:white;">NEW • GEMINI</span></a>
-<a href="operations/predictive.html" class="card c6"><div class="ic">🔮</div><h3>Predictive UI</h3><p>Flight → Uber on lock screen</p><span class="tag" style="background:#ff9600;color:black;">NEW • SAMSUNG</span></a>
-<a href="operations/photolab.html" class="card c4"><div class="ic">🎨</div><h3>Photo Lab</h3><p>Sketch to image, video from photo</p><span class="tag" style="background:#ec4899;color:white;">NEW • GALAXY AI</span></a>
-<a href="operations/incognito.html" class="card c1"><div class="ic">🕵️</div><h3>Incognito Chat</h3><p>Temporary, doesn't save</p><span class="tag" style="background:#6b7280;color:white;">NEW • PRIVACY</span></a>
-<a href="operations/personal.html" class="card c5"><div class="ic">🔗</div><h3>Personal Intel</h3><p>Gmail + Photos + YT = one answer</p><span class="tag" style="background:#22c55e;color:black;">NEW • GEMINI PI</span></a>
+<div class="section">DRIVING — 广州定制 • 你嘅卖点</div>
+<a href="trip.html" class="card"><div class="ic">🔮</div><h3>Trip Brain</h3><p>通勤预测 + 充电焦虑消除</p><span class="tag" style="background:#3b82f6;color:white;">GUANGZHOU • KEEP</span></a>
+<a href="parking.html" class="card"><div class="ic">🅿️</div><h3>Memory Parking</h3><p>天河城B2记忆泊车 + 哨兵</p><span class="tag" style="background:#a855f7;color:white;">OEM</span></a>
+<a href="energy.html" class="card"><div class="ic">🔋</div><h3>Energy Manager</h3><p>高温空调省电 + 优惠充电</p><span class="tag" style="background:#22c55e;color:black;">OEM • NEW</span></a>
+<a href="emotion.html" class="card"><div class="ic">💜</div><h3>Mood Guard</h3><p>路怒检测 + 粤语安抚</p><span class="tag" style="background:#a855f7;color:white;">KEEP</span></a>
+
+<div class="section">CONNECT + STUDIO — 车内全感知 + OEM定制</div>
+<a href="scan.html" class="card"><div class="ic">📷</div><h3>Ticket Scanner</h3><p>小票/车牌/充电桩OCR一键缴</p><span class="tag" style="background:#fbbf24;color:black;">NEW</span></a>
+<a href="assistant.html" class="card"><div class="ic">💬</div><h3>Cabin Companion</h3><p>主助手 — 连续对话情感</p><span class="tag" style="background:#00f2ff;color:black;">KEEP</span></a>
+<a href="widgets.html" class="card" style="border-color:#a855f7;"><div class="ic">🧩</div><h3>Cluster Builder</h3><p>仪表小组件工厂 • CAN绑定</p><span class="tag" style="background:#a855f7;color:white;">STUDIO • KEEP</span></a>
+<a href="health.html" class="card"><div class="ic">❤️</div><h3>Vehicle Health</h3><p>电池SOH + 预判故障</p><span class="tag" style="background:#22c55e;color:black;">KEEP</span></a>
+<a href="chat.html" class="card"><div class="ic">🧠</div><h3>Car Intel</h3><p>CAN + 手机 + 云 = 一脑</p><span class="tag" style="background:rgba(255,255,255,0.15);color:white;">KEEP</span></a>
+<a href="sos.html" class="card"><div class="ic">🆘</div><h3>Roadside SOS</h3><p>爆胎救援 + 一键粤语呼救</p><span class="tag" style="background:#ef4444;color:white;">SAFETY</span></a>
 </div>
-<div class="footer">baymax super os / 20 features / frontend locked / ready for backend / v1.5</div>
+
+<div class="footer">baymax auto os / 14 systems / cantonese-first 95% / built for gac / xpeng / byd oem pitch / v2.0 final<br>click baymax face for 粤语 — demo in 天河城 • <span id="footPing"></span></div>
+
+<script type="module">
+import { BaymaxAPI } from "./api.js";
+window.BaymaxAPI = BaymaxAPI;
+
+const statusEl = document.getElementById('apiStatus');
+const footEl = document.getElementById('footPing');
+
+BaymaxAPI.ping().then(r=>{
+  const ok = r.status && r.status!=='offline';
+  statusEl.innerText = ok ? `API: ${r.status||'online'} ✓` : `API: waking up... ${r.api}`;
+  footEl.innerText = ok ? `api ${r.status}` : `waking render — first request ~30s`;
+  statusEl.style.color = ok ? '#22c55e' : '#fbbf24';
+}).catch(()=>{ statusEl.innerText='API: demo mode (offline)'; });
+
+document.getElementById('hubSend').onclick=async()=>{
+ const input=document.getElementById('hubInput');
+ const v=input.value.trim(); if(!v) return;
+ input.value='';
+ statusEl.innerText='● Thinking...';
+ try{
+  const r=await BaymaxAPI.chat(v,"hub");
+  const txt=r.reply||'收到啦';
+  BaymaxAPI.speakCantonese(txt.slice(0,150));
+  statusEl.innerText='✓ '+txt.slice(0,80);
+  statusEl.style.color='#00f2ff';
+ }catch(e){ 
+  statusEl.innerText='Demo: 已帮你导航天河城，避开内环 — Baymax (offline)';
+  BaymaxAPI.speakCantonese('已帮你规划好啦，避开内环');
+ }
+};
+document.getElementById('hubInput').onkeydown=e=>{if(e.key==='Enter') document.getElementById('hubSend').click();};
+</script>
 </body>
 </html>

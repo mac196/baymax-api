@@ -1,15 +1,93 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Screen to Action - Baymax</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
-.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;}
-.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}</style></head><body>
-<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">SCREEN-TO-ACTION / GEMINI</span></div>
-<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(34,197,94,0.15);border:1px solid #22c55e;color:#22c55e;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">🛒 GEMINI INTELLIGENCE</div><h1 style="font-size:34px;">SCREEN <span style="color:#22c55e;">TO ACTION</span></h1><p style="opacity:0.5;">Long-press list → delivery cart. Brochure → trip booking</p></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Car Action - Baymax Auto</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:radial-gradient(circle at top,#0a1a2e 0%,#050a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
+.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;}
+.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}
+.log{font-family:monospace;font-size:12px;opacity:0.8}
+</style>
+</head>
+<body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">CAR ACTION / BAYMAX AUTO</span></div>
+
+<div style="text-align:center;margin-bottom:25px;">
+<div style="display:inline-block;background:rgba(0,242,255,0.15);border:1px solid #00f2ff;color:#00f2ff;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">🔧 BAYMAX AUTO INTELLIGENCE</div>
+<h1 style="font-size:34px;">SERVICE <span style="color:#00f2ff;">ACTION</span></h1>
+<p style="opacity:0.5;">Alert → Auto booking • For Guangzhou EV dealers</p>
+</div>
+
 <div class="card">
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-<div style="background:rgba(0,0,0,0.3);padding:18px;border-radius:14px;"><div style="font-size:11px;opacity:0.4;">YOUR NOTES</div><div style="margin-top:10px;background:rgba(255,255,255,0.05);padding:12px;border-radius:10px;font-size:13px;line-height:1.7;">Grocery:<br>• Oats<br>• Almond milk<br>• Eggs<br>• Chicken breast<br>• Spinach</div><button style="margin-top:12px;width:100%;padding:10px;background:#22c55e;border:none;border-radius:12px;color:black;font-weight:700;">🛒 Build Cart for Delivery</button></div>
-<div style="background:rgba(0,0,0,0.3);padding:18px;border-radius:14px;"><div style="font-size:11px;opacity:0.4;">LIVE PROGRESS</div><div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;font-size:12px;">
-<div style="display:flex;align-items:center;gap:8px;"><span style="color:#22c55e;">✓</span> Found 5 items in notes</div>
-<div style="display:flex;align-items:center;gap:8px;"><span style="color:#22c55e;">✓</span> Opened Instacart</div>
-<div style="display:flex;align-items:center;gap:8px;"><span style="color:#ff9600;">●</span> Adding to cart... (3/5)</div>
-<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;margin-top:8px;">You remain in control — final confirmation needed before checkout</div>
-</div></div></div></div></body></html>
+
+<!-- LEFT: CAR ALERT -->
+<div style="background:rgba(0,0,0,0.4);padding:18px;border-radius:14px;">
+<div style="font-size:11px;opacity:0.4;letter-spacing:1px;">VEHICLE DIAGNOSTICS</div>
+<div style="margin-top:12px;background:rgba(255,50,50,0.08);border:1px solid rgba(255,50,50,0.2);padding:14px;border-radius:10px;font-size:13px;line-height:1.8;">
+⚠️ Xpeng G6 - 粤A·12345<br>
+• Brake pads: 18% remaining<br>
+• Battery health: 92%<br>
+• Next service: 1,200km overdue<br>
+• Tire pressure FL: Low
+</div>
+<button id="actionBtn" style="margin-top:14px;width:100%;padding:12px;background:#00f2ff;border:none;border-radius:12px;color:black;font-weight:800;cursor:pointer;">🔧 Book Service Now</button>
+<div style="font-size:10px;opacity:0.3;margin-top:8px;text-align:center;">Wired to BaymaxAPI.action() • api.js</div>
+</div>
+
+<!-- RIGHT: LIVE PROGRESS -->
+<div style="background:rgba(0,0,0,0.4);padding:18px;border-radius:14px;">
+<div style="font-size:11px;opacity:0.4;letter-spacing:1px;">LIVE PROGRESS</div>
+<div id="progress" style="margin-top:12px;display:flex;flex-direction:column;gap:10px;font-size:12px;">
+<div class="log">• Waiting for action...</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+
+const progressEl = document.getElementById('progress');
+const btn = document.getElementById('actionBtn');
+
+function log(msg, color="#00f2ff"){
+  const d = document.createElement('div');
+  d.className = 'log';
+  d.style.color = color;
+  d.innerText = msg;
+  progressEl.appendChild(d);
+}
+
+btn.addEventListener('click', async () => {
+  progressEl.innerHTML = '';
+  log('✓ Found 3 service items', '#22c55e');
+  log('● Connecting to dealer system...', '#ff9600');
+  
+  try {
+    // This calls your REAL backend we saved in api.js
+    const result = await BaymaxAPI.action("book_service", {
+      car: "Xpeng G6 粤A·12345",
+      issues: ["brake pads 18%", "service overdue", "tire FL low"],
+      lang: "zh"
+    });
+    
+    log('✓ Opened Guangzhou Service Center', '#22c55e');
+    log('✓ Appointment draft created', '#22c55e');
+    log(`→ ${result.reply || result.response || 'Booking ready for confirmation'}`, 'white');
+    log('You remain in control — final confirmation needed', 'rgba(255,255,255,0.5)');
+    
+  } catch(e){
+    log('✓ Demo mode: Appointment draft created (backend offline)', '#22c55e');
+    log('→ Service booking: Tomorrow 10:00 AM - Jurong 4S shop', 'white');
+    log(`Error detail: ${e.message}`, '#ef4444');
+  }
+});
+</script>
+</body>
+</html>

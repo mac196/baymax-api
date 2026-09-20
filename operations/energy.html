@@ -1,0 +1,60 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Energy - Baymax Auto</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}body{background:radial-gradient(circle at top,#1a2e1a 0%,#0a0a0a 100%);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px}
+.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:20px}
+.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;font-size:12px}
+.badge{background:rgba(34,197,94,0.15);border:1px solid #22C55E;color:#22C55E;padding:5px 14px;border-radius:20px;font-size:11px}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;margin-top:20px}
+.item{background:rgba(0,0,0,0.4);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,0.08)}
+.prog{height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;margin-top:8px}
+.prog div{height:100%;background:linear-gradient(90deg,#22c55e,#16a34a)}
+</style></head><body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">ENERGY MGR • 高温省电</span></div>
+<div class="badge">🔋 ENERGY • 广州高温能耗优化 • V2L</div>
+<h1 style="margin-top:12px;font-size:34px;">ENERGY <span style="color:#22C55E;">MANAGER</span></h1>
+<p style="opacity:0.5;font-size:12px;">今日空调占 38% — Baymax已预冷省 2.1kWh • 电池温度 31°C</p>
+<div class="card">
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+<div class="item"><div style="font-size:11px;opacity:0.6;">当前电量</div><div style="font-size:28px;font-weight:800;margin-top:6px;">82% <span style="font-size:12px;opacity:0.5;">412km</span></div><div class="prog"><div style="width:82%"></div></div><div style="font-size:10px;color:#22C55E;margin-top:6px;">✔ 够3天通勤</div></div>
+<div class="item"><div style="font-size:11px;opacity:0.6;">空调能耗</div><div style="font-size:28px;font-weight:800;margin-top:6px;">1.8 kW</div><div class="prog"><div style="width:38%;background:linear-gradient(90deg,#38bdf8,#3b82f6)"></div></div><div style="font-size:10px;opacity:0.5;margin-top:6px;">已智能调至 26°C 省电</div></div>
+<div class="item"><div style="font-size:11px;opacity:0.6;">优惠充电</div><div style="font-size:18px;font-weight:800;margin-top:6px;color:#38bdf8;">00:00-06:00 ¥0.38</div><div style="font-size:10px;opacity:0.5;margin-top:6px;">Baymax已预约自动充 • 省 ¥12</div></div>
+</div>
+<div style="margin-top:16px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:14px;padding:14px;display:flex;gap:12px">
+<div style="font-size:24px;">🤖</div>
+<div style="font-size:13px;line-height:1.6;" id="baymaxEnergyTip">Baymax: 广州今日暴晒 34°C，停车建议选B2阴凉区，电池温度低3°C，续航多8km。放学后可用V2L给BB冲奶机供电，讲一句就得。</div>
+</div>
+<div style="margin-top:14px;display:flex;gap:8px">
+<input id="energyInput" placeholder="说: 今晚12点充满 / 开露营模式 / 用粤语说电量" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:12px 14px;border-radius:12px;color:white;font-size:13px;outline:none">
+<button id="energyBtn" style="padding:12px 18px;background:#22C55E;border:none;border-radius:12px;font-weight:800;color:black;cursor:pointer;">执行</button>
+</div>
+<div id="energyStatus" style="font-size:10px;opacity:0.4;text-align:center;margin-top:8px;">Ready • V2L 220V 已就绪</div>
+</div>
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+const input = document.getElementById('energyInput');
+const tip = document.getElementById('baymaxEnergyTip');
+const statusEl = document.getElementById('energyStatus');
+
+async function doEnergy(q){
+  if(!q) return;
+  tip.innerHTML = '● Baymax 谂紧... 优化紧能耗';
+  try{
+    const r = await BaymaxAPI.chat(q,"energy");
+    const reply = r.reply||r.response||'已帮你设置好啦，今晚00:00自动优惠充电';
+    tip.innerHTML = reply;
+    statusEl.innerText = '✓ '+reply.slice(0,30);
+    try{ BaymaxAPI.speakCantonese(reply); }catch{}
+  }catch{
+    tip.innerHTML = '演示：已预约00:00-06:00优惠充电 ¥0.38，预估省¥12，已开启电池预冷。';
+    statusEl.innerText = '✓ 演示模式：已预约充电';
+  }
+}
+
+document.getElementById('energyBtn').onclick=()=>{
+  const v=input.value.trim();
+  doEnergy(v);
+};
+input.addEventListener('keydown', e=>{
+  if(e.key==='Enter') doEnergy(e.target.value.trim());
+});
+</script>
+</body></html>

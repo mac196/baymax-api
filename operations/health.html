@@ -1,17 +1,69 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Health - Baymax</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 20px;}
-.top-nav{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top-nav a{color:white;text-decoration:none;opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;} .top-nav a:hover{border-color:#ef4444;color:#ef4444;}
-.header{text-align:center;margin-bottom:30px;} .badge{background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:5px 14px;border-radius:20px;font-size:11px;display:inline-block;margin-bottom:12px;} .header h1{font-size:36px;} .header h1 span{color:#ef4444;text-shadow:0 0 15px #ef4444;} .main{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;backdrop-filter:blur(12px);}</style></head><body>
-<div class="top-nav"><a href="../index.html">← Back to Hub</a><span style="opacity:0.3;font-size:11px;">HEALTH TRACKER / FRONTEND</span></div>
-<div class="header"><div class="badge">❤️ PILLAR 2 — HEALTH • LOOKS OUT FOR YOU</div><h1>HEALTH <span>TRACKER</span></h1><p style="opacity:0.5;">Sleep, training, mood, burnout detection</p></div>
-<div class="main">
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin-bottom:20px;">
-<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:16px;padding:20px;text-align:center;"><div style="font-size:28px;">😴</div><div style="font-size:13px;opacity:0.6;margin-top:8px;">SLEEP</div><div style="font-size:24px;font-weight:700;margin-top:4px;">6h 42m</div><div style="font-size:11px;opacity:0.5;">Light sleep — take it easy</div></div>
-<div style="background:rgba(0,0,0,0.3);border-radius:16px;padding:20px;text-align:center;"><div style="font-size:28px;">🏃</div><div style="font-size:13px;opacity:0.6;margin-top:8px;">TRAINING</div><div style="font-size:24px;font-weight:700;margin-top:4px;">2 / 4</div><div style="font-size:11px;opacity:0.5;">This week</div></div>
-<div style="background:rgba(0,0,0,0.3);border-radius:16px;padding:20px;text-align:center;"><div style="font-size:28px;">🧘</div><div style="font-size:13px;opacity:0.6;margin-top:8px;">MOOD</div><div style="font-size:24px;font-weight:700;margin-top:4px;">Focused</div><div style="font-size:11px;opacity:0.5;">Slightly tired</div></div>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Baymax Vehicle Health</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}body{background:#0F172A;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px;}
+.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:12px}
+.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;font-size:12px}
+.badge{background:rgba(34,197,94,0.15);border:1px solid #22C55E;color:#22C55E;padding:5px 14px;border-radius:20px;font-size:11px;display:inline-block;margin-bottom:10px;}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;backdrop-filter:blur(12px);margin-top:20px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.item{background:rgba(0,0,0,0.4);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.08);}
+</style></head><body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">HEALTH • 车况管家</span></div>
+<div style="text-align:center;">
+<div class="badge">🛡️ VEHICLE HEALTH • 车况管家 • 预测性维护</div>
+<h1 style="color:white;font-size:32px;">BAYMAX <span style="color:#22C55E;">HEALTH</span></h1>
+<p style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:6px;">不是人的健康，是车的健康 — 广州湿热电池衰减预警 + 胎压/热管理</p>
 </div>
-<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:16px;padding:20px;">
-<div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14px;font-weight:600;">💡 Baymax Insight — Looking out for you</div><span style="font-size:11px;background:#ef4444;color:white;padding:4px 10px;border-radius:20px;">ADJUSTED PLAN</span></div>
-<div style="margin-top:12px;font-size:14px;line-height:1.6;opacity:0.8;">You were up until 1:23AM coding. Sleep 23% below goal. I adjusted today: moved workout to tomorrow, set deep work to 25min blocks, remind you to wind down at 10PM.</div>
-<div style="margin-top:15px;display:flex;gap:10px;"><button style="padding:8px 16px;background:#ef4444;color:white;border:none;border-radius:20px;font-size:12px;">Accept Plan</button><button style="padding:8px 16px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:white;border-radius:20px;font-size:12px;">Customize</button></div>
-</div></div></body></html>
+
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+<h3 style="color:white;">今日车况评分 — 92/100 <span style="color:#22C55E;font-size:14px;">优</span></h3>
+<span style="font-size:11px;color:#22C55E;">● 一切正常 • 上次自检 2h前</span>
+</div>
+<div class="grid">
+<div class="item"><div style="color:#7dd3fc;font-size:11px;">🔋 电池健康 SOH</div><div style="color:white;font-size:22px;margin-top:8px;font-weight:800;">94.2%</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;">三伏天衰减 -0.3%/月 • 正常</div></div>
+<div class="item"><div style="color:#FB923C;font-size:11px;">🛞 胎压 TPMS</div><div style="color:white;font-size:22px;margin-top:8px;font-weight:800;">2.4 / 2.3 / 2.5 / 2.4</div><div style="font-size:10px;color:#22C55E;margin-top:4px;">bar — 正常</div></div>
+<div class="item"><div style="color:#38bdf8;font-size:11px;">🌡️ 热管理</div><div style="color:white;font-size:18px;margin-top:8px;font-weight:700;">电池 32°C / 电机 41°C</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;">已启动电池冷却</div></div>
+<div class="item"><div style="color:white;font-size:11px;">🛢️ 刹车片</div><div style="color:white;font-size:20px;margin-top:8px;">前 6.2mm / 后 7.1mm</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">预计还能 18,000km</div></div>
+<div class="item"><div style="color:white;font-size:11px;">📅 保养</div><div style="color:white;font-size:18px;margin-top:8px;">下次 8,200km 后</div><div style="font-size:10px;color:#3b82f6;">已预约 广汽4S — 9月28</div></div>
+<div class="item"><div style="color:white;font-size:11px;">💡 故障码 DTC</div><div style="color:#22C55E;font-size:20px;margin-top:8px;">0 个 DTC</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">系统健康</div></div>
+</div>
+
+<div style="margin-top:20px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center;">
+<div style="font-size:24px;">🤖</div>
+<div style="font-size:13px;color:white;line-height:1.6;" id="baymaxTip">Baymax: 检测到广州未来3天持续高温，电池在暴晒下易过热，建议停车选阴凉处，今日已帮你自动开启电池温控，省心啦。</div>
+</div>
+
+<div style="margin-top:16px;display:flex;gap:8px;">
+<input id="healthInput" placeholder="问: 电池为什么掉这么快? / 胎压低怎么办? 用粤语答" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:12px 16px;border-radius:12px;color:white;outline:none;font-size:13px;">
+<button id="askBtn" style="padding:12px 20px;background:#22C55E;border:none;border-radius:12px;color:black;font-weight:800;cursor:pointer;">问Baymax</button>
+</div>
+<div id="healthStatus" style="font-size:10px;opacity:0.4;text-align:center;margin-top:8px;">DMS联动 • 预测性维护已开启</div>
+</div>
+
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+const input = document.getElementById('healthInput');
+const tip = document.getElementById('baymaxTip');
+const statusEl = document.getElementById('healthStatus');
+
+async function askHealth(q){
+ if(!q) return;
+ tip.innerText='● Baymax 诊断中... 分析紧车况数据';
+ try{
+  const r=await BaymaxAPI.chat(q, "vehicle_health");
+  const reply = r.reply || r.response || '已检查，车况正常，92分';
+  tip.innerText=reply;
+  statusEl.innerText='✓ 诊断完成';
+  try{ BaymaxAPI.speakCantonese(reply); }catch{}
+ }catch(e){
+  tip.innerText='胎压2.3略低但安全，开到4S打气就得，唔使担心 — Baymax (离线演示)';
+  statusEl.innerText='● 离线演示模式';
+ }
+}
+
+document.getElementById('askBtn').onclick = ()=> askHealth(input.value.trim());
+input.addEventListener('keydown', e=>{
+  if(e.key==='Enter') askHealth(e.target.value.trim());
+});
+</script>
+</body></html>

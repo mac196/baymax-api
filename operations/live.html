@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Live Voice - Baymax</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}body{background:radial-gradient(circle at top,#1a2e2e 0%,#0a0a0a 100%);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px}
+.top{width:700px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:20px}
+.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;font-size:12px}
+.badge{background:rgba(0,242,255,0.15);border:1px solid #00f2ff;color:#00f2ff;padding:5px 14px;border-radius:20px;font-size:11px}
+.orb{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#00f2ff,#3b82f6);box-shadow:0 0 40px #00f2ff;animation:pulse 2s infinite; margin:20px auto; cursor:pointer}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.orb.active{animation:pulse 0.6s infinite; box-shadow:0 0 60px #00f2ff}
+.card{width:700px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;margin-top:20px;text-align:center}</style></head><body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">LIVE VOICE • 免唤醒</span></div>
+<div class="badge">🎙️ LIVE • 免唤醒 粤语对话 • 打断</div>
+<h1 style="margin-top:12px;font-size:32px;">BAYMAX <span style="color:#00f2ff;">LIVE</span></h1>
+<p style="opacity:0.5;font-size:12px;">讲 "Baymax" 就得 — 全程粤语打断 • VAD降噪</p>
+<div class="card">
+<div id="orb" class="orb"></div>
+<div id="status" style="font-size:14px;opacity:0.8;">● 点击开始对话</div>
+<div id="transcript" style="margin-top:16px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;min-height:60px;font-size:13px;text-align:left;opacity:0.9;line-height:1.6;">你: 去天河城有冇位泊？<br>Baymax: B2仲有42个位，已帮你导航啦，天河城等你。</div>
+<div style="margin-top:16px;display:flex;gap:8px;justify-content:center;">
+<button id="micBtn" style="padding:12px 24px;background:#00f2ff;border:none;border-radius:20px;font-weight:800;color:black;cursor:pointer;">🎤 按住讲</button>
+<button id="stopBtn" style="padding:12px 18px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:20px;color:white;cursor:pointer;">⏹️ 停止</button>
+</div>
+<div style="margin-top:12px;font-size:10px;opacity:0.4;">VAD + 噪音消除 — 120km/h 都听得清 • 长按语音，自动粤语TTS</div>
+</div>
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+const statusEl=document.getElementById('status'), transcript=document.getElementById('transcript'), micBtn=document.getElementById('micBtn'), orb=document.getElementById('orb');
+const stopBtn=document.getElementById('stopBtn');
+let rec=null, listening=false;
+
+function safeStart(){
+  try{ rec && rec.start(); }catch(e){ /* already started */ }
+}
+function safeStop(){
+  try{ rec && rec.stop(); }catch(e){}
+}
+
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SpeechRecognition){
+ rec=new SpeechRecognition();
+ rec.lang='zh-CN';
+ rec.continuous=false;
+ rec.interimResults=false;
+ rec.onstart=()=>{
+  statusEl.innerText='● 听紧你讲... 放开结束';
+  orb.classList.add('active');
+ }
+ rec.onresult=async e=>{
+  const txt=e.results[0][0].transcript;
+  transcript.innerHTML=`你: ${txt}<br><span style="opacity:0.5;color:#00f2ff">● Baymax谂紧...</span>`;
+  statusEl.innerText='● Baymax 回答中...';
+  try{
+   const r=await BaymaxAPI.chat(txt,"live");
+   const reply=r.reply||r.response||'收到啦，已帮你搞掂';
+   transcript.innerHTML=`你: ${txt}<br><span style="color:#00f2ff">Baymax:</span> ${reply}`;
+   try{ BaymaxAPI.speakCantonese(reply); }catch{ const u=new SpeechSynthesisUtterance(reply); u.lang='zh-HK'; u.rate=1.05; speechSynthesis.speak(u); }
+  }catch{
+   const fallback='收到，已帮你导航天河城B2，仲有42个位';
+   transcript.innerHTML=`你: ${txt}<br><span style="color:#00f2ff">Baymax:</span> ${fallback}`;
+  }
+  statusEl.innerText='● 点击或按住继续讲';
+  orb.classList.remove('active');
+ };
+ rec.onend=()=>{
+  orb.classList.remove('active');
+  if(listening){ setTimeout(safeStart, 300); }
+  else { statusEl.innerText='● 待机中 — 按住讲嘢'; }
+ };
+ rec.onerror=()=>{ orb.classList.remove('active'); statusEl.innerText='● 麦克风失败，点重试'; listening=false; }
+} else {
+  statusEl.innerText='⚠ 浏览器不支持语音识别，用输入代替';
+}
+
+function startListen(){
+  if(!rec) return;
+  listening=true;
+  safeStart();
+}
+function endListen(){
+  listening=false;
+  safeStop();
+}
+
+micBtn.addEventListener('mousedown', startListen);
+micBtn.addEventListener('mouseup', endListen);
+micBtn.addEventListener('mouseleave', endListen);
+micBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); startListen(); }, {passive:false});
+micBtn.addEventListener('touchend', (e)=>{ e.preventDefault(); endListen(); });
+orb.addEventListener('click', ()=>{ if(listening) endListen(); else startListen(); });
+stopBtn.onclick=()=>{ speechSynthesis.cancel(); endListen(); statusEl.innerText='● 已停止'; };
+</script>
+</body></html>

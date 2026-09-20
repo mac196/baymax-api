@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Driver Emotion - Baymax</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}body{background:radial-gradient(circle at top,#2e1a2e 0%,#0a0a0a 100%);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px}
+.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:20px}
+.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;font-size:12px}
+.badge{background:rgba(168,85,247,0.15);border:1px solid #A855F7;color:#A855F7;padding:5px 14px;border-radius:20px;font-size:11px}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;margin-top:20px}</style></head><body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">EMOTION AI / MOOD GUARD</span></div>
+<div class="badge">💜 EMOTION • 驾驶员情绪安抚 • 路怒检测</div>
+<h1 style="margin-top:12px;font-size:32px;">MOOD <span style="color:#A855F7;">GUARD</span></h1>
+<p style="opacity:0.5;font-size:12px;">检测路怒/焦虑/疲劳 — Baymax自动安抚 • 粤语共情</p>
+<div class="card">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div style="background:black;border-radius:16px;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(168,85,247,0.3)">
+<div style="font-size:60px;" id="emoji">😐</div>
+<div id="emotionLabel" style="margin-top:10px;font-weight:800;">平静 — 正常驾驶</div>
+<div style="font-size:10px;opacity:0.4;margin-top:4px;">心率 78 • 眼动正常 • 语音平静 • DMS联动</div>
+</div>
+<div>
+<div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:14px;padding:16px;">
+<div style="font-size:11px;opacity:0.6;">BAYMAX 安抚策略</div>
+<div id="strategy" style="font-size:13px;line-height:1.7;margin-top:8px;">当前平静，保持粤语轻音乐。<br><br>若检测到路怒 → 自动降低音量，粤语: 深呼吸，唔好嬲，Baymax同你慢慢行。</div>
+</div>
+<div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<button onclick="setMood('angry')" style="padding:10px;background:rgba(239,68,68,0.2);border:1px solid #EF4444;border-radius:10px;color:white;cursor:pointer;">😡 模拟路怒</button>
+<button onclick="setMood('tired')" style="padding:10px;background:rgba(251,191,36,0.2);border:1px solid #FBBF24;border-radius:10px;color:white;cursor:pointer;">😴 模拟疲劳</button>
+<button onclick="setMood('calm')" style="padding:10px;background:rgba(34,197,94,0.2);border:1px solid #22C55E;border-radius:10px;color:white;cursor:pointer;">😊 平静</button>
+<button onclick="setMood('stress')" style="padding:10px;background:rgba(168,85,247,0.2);border:1px solid #A855F7;border-radius:10px;color:white;cursor:pointer;">😰 焦虑</button>
+</div>
+<div id="emoStatus" style="text-align:center;font-size:10px;opacity:0.4;margin-top:8px;">Emotion AI idle</div>
+</div>
+</div>
+</div>
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+
+window.setMood = async (m) => {
+ const e=document.getElementById('emoji'), l=document.getElementById('emotionLabel'), s=document.getElementById('strategy'), st=document.getElementById('emoStatus');
+ st.innerText = '● Baymax 响应中...';
+ if(m==='angry'){ 
+  e.innerText='😡'; l.innerHTML='<span style="color:#EF4444">路怒检测 — 方向盘用力 • 心率98</span>'; 
+  s.innerHTML='Baymax: 深呼吸，唔好嬲，前方拥堵，播翻首林子祥冷静下，空调已调至24°C。<br><br>→ 自动屏蔽鸣笛+氛围灯冷蓝';
+  try{ await BaymaxAPI.chat("驾驶员路怒，请用粤语共情安抚，慢慢开","emotion"); BaymaxAPI.speakCantonese('深呼吸，唔好嬲，慢慢揸，Baymax同你喺度'); }catch{ const u=new SpeechSynthesisUtterance('深呼吸，唔好嬲，慢慢揸'); u.lang='zh-HK'; speechSynthesis.speak(u); }
+  st.innerText='✓ 安抚已执行：音乐+空调+灯光';
+ }
+ if(m==='tired'){ 
+  e.innerText='😴'; l.innerText='疲劳 — 眼闭合 1.8s • 需休息'; 
+  s.innerHTML='Baymax: 检测到你眼攰，广州下个服务区2km，建议休息10分钟，已帮你订咖啡。<br>→ 座椅震动+冷风+提神音乐';
+  st.innerText='✓ 疲劳响应：震动+冷风';
+ }
+ if(m==='calm'){ 
+  e.innerText='😊'; l.innerHTML='<span style="color:#22C55E">平静 — 正常驾驶</span>'; 
+  s.innerHTML='保持当前粤语轻音乐，继续导航。心情靓，一路顺风。'; 
+  st.innerText='● 平静模式';
+ }
+ if(m==='stress'){ 
+  e.innerText='😰'; l.innerText='焦虑 — 心率 102 • 呼吸急'; 
+  s.innerHTML='Baymax: 放松下，深呼吸，听日先至系星期一，唔使急，Baymax帮你搞掂路线。<br>→ 氛围灯调暖黄+呼吸练习';
+  try{ BaymaxAPI.speakCantonese('放松下，深呼吸，唔使急'); }catch{}
+  st.innerText='✓ 焦虑安抚：暖光+呼吸指导';
+ }
+}
+</script>
+</body></html>
