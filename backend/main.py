@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import json, os, requests, urllib.parse, base64
 from datetime import datetime
 from typing import Optional, Dict
+import pathlib
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -89,14 +90,12 @@ def api_home():
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    # Pass all car context to brain
     result = get_baymax_reply(
         msg=req.message,
         mode=req.mode,
         lang=req.lang,
         image_b64=req.image
     )
-    # Support both string and dict returns
     if isinstance(result, dict):
         return result
     return {"reply": result}
@@ -104,6 +103,7 @@ def chat(req: ChatRequest):
 @app.post("/api/translate")
 async def translate_text(req: TranslateRequest):
     src = parse_lang(req.from_lang)
+    tgt = parse_lang(req.to_lo_lang if hasattr(req, 'to_lo_lang') else req.to_lang)
     tgt = parse_lang(req.to_lang)
     return {"translated": translate_unlimited(req.text, src, tgt)}
 
@@ -112,7 +112,6 @@ async def screen_analyze(file: UploadFile = File(...), lang: str = "yue"):
     content = await file.read()
     b64 = base64.b64encode(content).decode()
     mime = file.content_type or "image/jpeg"
-    # Re-use brain logic
     result = get_baymax_reply(
         msg=f"分析呢个画面, 用{lang}讲",
         mode="screen",
@@ -153,8 +152,19 @@ def get_latest():
     except:
         return {"bpm": 78}
 
-# --- Frontend mount (must be last) ---
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Check if frontend files exist in parent dir
-if os.path.exists(os.path.join(BASE_DIR, "index.html")):
-    app.mount("/", StaticFiles(directory=BASE_DIR, html=True), name="frontend")
+# --- Frontend mount (MUST BE LAST) ---
+CURRENT_DIR = pathlib.Path(__file__).parent
+BASE_DIR = CURRENT_DIR.parent
+
+# Find where index.html actually lives (local vs Render)
+if (BASE_DIR / "index.html").exists():
+    FRONTEND_DIR = BASE_DIR
+elif (CURRENT_DIR / "index.html").exists():
+    FRONTEND_DIR = CURRENT_DIR
+else:
+    FRONTEND_DIR = BASE_DIR
+
+print(f"[Baymax] Mounting frontend from: {FRONTEND_DIR}")
+
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")

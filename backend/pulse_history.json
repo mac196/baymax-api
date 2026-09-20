@@ -1,6 +1,8 @@
 [
   {
-    "bpm": 84,
-    "time": "2026-09-13T17:50:00.291982"
+    "bpm": 78,
+    "time": "2026-09-20T09:00:00",
+    "user": "driver",
+    "note": "car_system_check_ok"
   }
 ]

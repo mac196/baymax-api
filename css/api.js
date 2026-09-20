@@ -1,84 +1,54 @@
-// api.js - BAYMAX AUTO FINAL - Guangzhou EV Market
-// Path: /api.js (same as index.html) — MODULE + non-module compatible
-
-const API_BASE = "https://baymax-api-bii6.onrender.com"; // Render URL — cold start ~30s
-
-const withTimeout = (ms, promise) => {
-  const t = new Promise((_, rej) => setTimeout(() => rej(new Error(`TIMEOUT ${ms}ms — Render cold start, retrying`)), ms));
-  return Promise.race([promise, t]);
-};
+// Baymax API - auto-detects local vs Render
+const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+ ? "" // local: use relative
+  : ""; // on Render, same domain serves frontend+backend
 
 export const BaymaxAPI = {
-
-  // Unified chat — text + image base64 + Cantonese
-  chat: async (message, mode = "auto", imageBase64 = null) => {
-    const body = { message, mode, lang: "yue", city: "guangzhou" };
-    if (imageBase64) body.image = imageBase64; // data:image/jpeg;base64,...
-
-    // Retry once for Render sleep
-    for (let attempt = 0; attempt < 2; attempt++) {
+  async ping() {
+    try {
+      const r = await fetch(`${API_BASE}/health`);
+      if (!r.ok) throw new Error("health failed");
+      return await r.json();
+    } catch (e) {
       try {
-        const res = await withTimeout(25000, fetch(`${API_BASE}/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        }));
-        if (!res.ok) {
-          const txt = await res.text().then(s=>s.slice(0,300)).catch(()=>res.statusText);
-          // Don't throw HTML page — return offline hint
-          if (txt.includes('<!DOCTYPE')) throw new Error('Render waking up...');
-          throw new Error(txt);
-        }
-        const data = await res.json();
-        // normalize backend: reply / response / output
-        data.reply = data.reply || data.response || data.output || '';
-        return data;
-      } catch (e) {
-        if (attempt === 1) throw e;
-        await new Promise(r => setTimeout(r, 1200)); // wait cold start
+        const r2 = await fetch(`${API_BASE}/api`);
+        return await r2.json();
+      } catch {
+        return { status: "offline", api: API_BASE || "relative" };
       }
     }
   },
 
-  vision: (prompt, imageBase64, mode="screen") => BaymaxAPI.chat(prompt, mode, imageBase64),
-  action: (type, data) => BaymaxAPI.chat(`ACTION:${type} ${JSON.stringify(data)}`, "car-action"),
-  sos: (data) => BaymaxAPI.chat(`SOS ${JSON.stringify(data)} 在广州`, "roadside-sos"),
-  memory: (text) => BaymaxAPI.chat(`记住: ${text}`, "car-memory"),
-
-  ping: async () => {
-    try {
-      const res = await withTimeout(8000, fetch(`${API_BASE}/health`));
-      return await res.json();
-    } catch(e){ return { status:"offline", api: API_BASE, error: e.message }; }
+  async chat(message, mode="auto", lang="yue") {
+    const res = await fetch(`${API_BASE}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, mode, lang, city: "guangzhou" })
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`Chat ${res.status}: ${txt}`);
+    }
+    return await res.json();
   },
 
-  // Cantonese TTS — HK voice + queue safe
-  speakCantonese: (text) => {
+  async translate(text, from="en", to="yue") {
+    const res = await fetch(`${API_BASE}/api/translate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, from_lang: from, to_lang: to })
+    });
+    return await res.json();
+  },
+
+  speakCantonese(text) {
     if (!text) return;
     try {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "zh-HK";
+      u.rate = 0.95;
       speechSynthesis.cancel();
-      const clean = text.replace(/[#*`_]/g,'').slice(0,200);
-      const u = new SpeechSynthesisUtterance(clean);
-      const voices = speechSynthesis.getVoices();
-      const hk = voices.find(v => v.lang.toLowerCase().includes('hk')) 
-              || voices.find(v => v.lang.toLowerCase().includes('yue'))
-              || voices.find(v => v.lang.toLowerCase().startsWith('zh'));
-      if (hk) u.voice = hk;
-      u.lang = hk ? hk.lang : 'zh-HK';
-      u.rate = 1.05;
-      u.pitch = 1.05;
-      u.volume = 1;
       speechSynthesis.speak(u);
     } catch {}
   }
 };
-
-// global for non-module tiles
-window.BaymaxAPI = BaymaxAPI;
-
-// Preload voices — Chrome needs async
-function loadVoices(){ speechSynthesis.getVoices(); }
-loadVoices();
-if (speechSynthesis.onvoiceschanged !== undefined) {
-  speechSynthesis.onvoiceschanged = loadVoices;
-}
