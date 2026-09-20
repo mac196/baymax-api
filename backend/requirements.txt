@@ -3,5 +3,5 @@ uvicorn[standard]==0.29.0
 groq==0.4.2
 python-dotenv==1.0.1
 python-multipart==0.0.9
-Pillow==10.3.0
+Pillow==11.0.0
 requests==2.31.0

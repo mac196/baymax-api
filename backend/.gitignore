@@ -5,3 +5,7 @@
 __pycache__/
 *.pyc
 venv/
+pulse_history.json
+.env.example
+pulse_history.json
+__pycache__/
