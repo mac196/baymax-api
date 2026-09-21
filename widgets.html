@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cluster Studio - Baymax Auto</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
+.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;}.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;font-size:12px}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}
+.widget{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;text-align:center;transition:0.2s;position:relative}.widget:hover{transform:translateY(-2px);border-color:#a855f7}.widget.live{border-color:#a855f7;background:rgba(168,85,247,0.12)}
+</style></head><body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">CLUSTER STUDIO / OEM DESIGN • 仪表小组件工厂</span></div>
+<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(168,85,247,0.15);border:1px solid #a855f7;color:#a855f7;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">🧩 仪表盘小组件 — 用中文描述，自动生成 + CAN绑定</div><h1 style="font-size:34px;">CLUSTER <span style="color:#a855f7;">BUILDER</span></h1><p style="opacity:0.5;font-size:12px;">Describe in Chinese → Baymax builds CAN-connected widget • 即时上仪表</p></div>
+
+<div class="card">
+<div style="display:flex;gap:10px;margin-bottom:20px;">
+<input id="widgetPrompt" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.3);border-radius:20px;padding:13px 18px;color:white;outline:none;font-size:13px;" placeholder="说：做一个续航焦虑小组件，显示到佛山够不够电" onkeydown="if(event.key==='Enter') buildWidget()">
+<button onclick="buildWidget()" id="buildBtn" style="padding:13px 20px;background:#a855f7;border:none;border-radius:20px;color:white;font-weight:600;cursor:pointer;">✨ Build Widget</button>
+</div>
+
+<div id="widgetGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+<div class="widget live" data-name="range">
+<div style="font-size:10px;opacity:0.5;letter-spacing:1px;">RANGE ANXIETY • 续航焦虑</div>
+<div style="font-size:28px;margin-top:8px;">🔋 68%</div>
+<div style="font-size:12px;margin-top:6px;">到佛山剩余 23%<br><span style="color:#22c55e;">够用，放心开</span></div>
+<div style="font-size:9px;margin-top:10px;opacity:0.4;">CAN: SOC + Nav • Live</div>
+<div style="position:absolute;top:8px;right:8px;font-size:9px;background:#22c55e;color:black;padding:2px 6px;border-radius:10px;">LIVE</div>
+</div>
+
+<div class="widget" data-name="tire">
+<div style="font-size:10px;opacity:0.5;">TIRE HEALTH • 胎压</div>
+<div style="font-size:24px;margin-top:8px;">🛞 2.4 / 2.5 bar</div>
+<div style="font-size:11px;margin-top:6px;">左前偏低，已提醒<br><span style="opacity:0.5;">上次打气 12天前</span></div>
+<div style="font-size:9px;margin-top:10px;opacity:0.4;">CAN: TPMS</div>
+</div>
+
+<div class="widget" data-name="charging">
+<div style="font-size:10px;opacity:0.5;">CHARGING MAP • 充电</div>
+<div style="font-size:20px;margin-top:8px;">⚡ 5 桩可用</div>
+<div style="font-size:11px;margin-top:6px;">天河城 1.2km<br>120kW 空闲 8个</div>
+<div style="font-size:9px;margin-top:10px;opacity:0.4;">API: Amap Charging</div>
+</div>
+</div>
+
+<div style="margin-top:20px;background:rgba(168,85,247,0.08);border:1px dashed rgba(168,85,247,0.3);border-radius:12px;padding:14px;text-align:center;font-size:12px;line-height:1.6;">
+💡 OEM designer types: "电池健康度 widget，显示循环次数和损耗" → Baymax generates CAN binding code automatically<br>
+<span style="opacity:0.5;font-size:10px;">Try: "胎噪" / "能耗" / "空调能耗占比" / "后排儿童温度"</span>
+</div>
+<div id="buildStatus" style="text-align:center;font-size:11px;opacity:0.5;margin-top:12px;">3 widgets active • 点击widget推仪表盘 • 双击删除</div>
+</div>
+
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+
+const presets={
+  '续航':{icon:'🔋 68%', title:'RANGE ANXIETY', sub:'到佛山剩余 23%<br><span style="color:#22c55e;">够用，放心开</span>', can:'SOC+Nav'},
+  '电池':{icon:'🔋 89% SOH', title:'BATTERY HEALTH', sub:'循环 312次<br>损耗 11% 健康度良好', can:'BMS'},
+  '胎':{icon:'🛞 2.4 bar', title:'TIRE HEALTH', sub:'左前偏低 已提醒', can:'TPMS'},
+  '能耗':{icon:'⚡ 13.2 kWh/100', title:'ENERGY USE', sub:'空调占 18%<br>比上周省 6%', can:'VCU'},
+  '空调':{icon:'❄️ 18% 功耗', title:'AC COST', sub:'空调耗电 1.2kW<br>续航影响 -8km', can:'HVAC'},
+  '儿童':{icon:'👶 26°C 后排', title:'KID COMFORT', sub:'后排温度适宜<br>湿度 55%', can:'Cabin'},
+  '充电':{icon:'⚡ 5 桩可用', title:'CHARGING MAP', sub:'天河城 1.2km 空闲', can:'Amap'},
+  '胎噪':{icon:'🔊 62dB', title:'ROAD NOISE', sub:'左前胎噪偏高<br>建议检查', can:'NVH'},
+};
+
+function makeWidget(prompt, replyText){
+  const grid=document.getElementById('widgetGrid');
+  const key=Object.keys(presets).find(k=>prompt.includes(k)) || '续航';
+  const p=presets[key];
+  const div=document.createElement('div');
+  div.className='widget live';
+  div.innerHTML=`
+    <div style="font-size:10px;opacity:0.5;">${p.title} • ${key}</div>
+    <div style="font-size:22px;margin-top:8px;">${p.icon}</div>
+    <div style="font-size:11px;margin-top:6px;line-height:1.4;">${p.sub}<br><span style="opacity:0.6;font-size:9px;">${replyText?replyText.slice(0,40):''}</span></div>
+    <div style="font-size:9px;margin-top:10px;opacity:0.4;">CAN: ${p.can} • AI Gen</div>
+    <div style="position:absolute;top:8px;right:8px;font-size:9px;background:#a855f7;color:white;padding:2px 6px;border-radius:10px;">NEW</div>`;
+  div.onclick=()=>pushCluster(div);
+  div.ondblclick=()=>div.remove();
+  grid.prepend(div);
+}
+
+function pushCluster(el){
+  document.getElementById('buildStatus').innerText=`✓ Pushed ${el.dataset.name||'widget'} to instrument cluster — 仪表盘已更新`;
+  el.style.borderColor='#22c55e';
+  setTimeout(()=>el.style.borderColor='rgba(168,85,247,0.4)',1000);
+}
+
+document.getElementById('widgetGrid').querySelectorAll('.widget').forEach(w=>{
+  w.onclick=()=>pushCluster(w);
+  w.ondblclick=()=>{ if(confirm('删除widget?')) w.remove(); };
+});
+
+window.buildWidget = async () => {
+  const input=document.getElementById('widgetPrompt');
+  const prompt=input.value.trim();
+  if(!prompt) { input.focus(); input.placeholder='先输入描述，例如：做一个空调能耗小组件'; return; }
+  const btn=document.getElementById('buildBtn');
+  btn.innerText='● Building...';
+  document.getElementById('buildStatus').innerText='● Building widget: '+prompt.slice(0,40)+' • CAN绑定中...';
+  try{
+    const r=await BaymaxAPI.chat(`Build cluster widget: ${prompt}. Respond with short widget description in Chinese+CAN signals`, "widget-builder");
+    makeWidget(prompt, r.reply||r.response||'');
+    document.getElementById('buildStatus').innerText='✓ Widget built → CAN bound • 双击删除，点击推仪表';
+  }catch(e){
+    makeWidget(prompt,'Demo: CAN信号已绑定');
+    document.getElementById('buildStatus').innerText='✓ Widget built (demo) — '+prompt.slice(0,30);
+  }
+  btn.innerText='✨ Build Widget';
+  input.value='';
+}
+</script>
+</body></html>

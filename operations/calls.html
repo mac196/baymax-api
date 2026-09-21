@@ -1,54 +1,15 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Roadside SOS - Baymax Auto</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a0a0a 0%,#000 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
+﻿<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Scheduled Calls - Baymax</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
 .top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;}
-.card{width:700px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,50,50,0.2);border-radius:24px;padding:30px;text-align:center;}
-.sos-pulse{width:80px;height:80px;background:#ef4444;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 0 30px rgba(239,68,68,0.6);animation:pulse 2s infinite;}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
-</style></head><body>
-<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">ROADSIDE SOS / BAYMAX AUTO</span></div>
-<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">🚨 SAFETY CRITICAL FEATURE</div><h1 style="font-size:34px;">ROADSIDE <span style="color:#ef4444;">SOS</span></h1><p style="opacity:0.5;">Baymax calls help when you can't • For Guangzhou EV fleet</p></div>
-
+.card{width:700px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;text-align:center;}</style></head><body>
+<div class="top"><a href="../index.html">ΓåÉ Hub</a><span style="opacity:0.3;font-size:11px;">SCHEDULED CALLS / VIRAL</span></div>
+<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(255,150,0,0.15);border:1px solid #ff9600;color:#ff9600;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">≡ƒô₧ MOST REQUESTED FEATURE</div><h1 style="font-size:34px;">SCHEDULED <span style="color:#ff9600;">CALLS</span></h1><p style="opacity:0.5;">Say "Call me tomorrow at 6AM" ΓÇö Baymax actually calls you</p></div>
 <div class="card">
-<div class="sos-pulse">🆘</div>
-<h3 id="statusText" style="margin-top:15px;">Vehicle: Xpeng G6 粤A·12345</h3><p style="opacity:0.5;font-size:13px;margin-top:6px;">Battery 8% • Location: Jurong Ave, Guangzhou</p>
-
+<div style="width:80px;height:80px;background:#ff9600;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:36px;">≡ƒô₧</div>
+<h3 style="margin-top:15px;">Baymax will call you at 6:00 AM</h3><p style="opacity:0.5;font-size:13px;margin-top:6px;">Incoming call screen ΓÇö not just notification</p>
 <div style="margin-top:25px;display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;">
-<div style="background:rgba(0,0,0,0.4);padding:14px;border-radius:12px;border:1px solid rgba(239,68,68,0.15)"><div style="font-size:11px;opacity:0.4;">AUTO TRIGGERS</div><div style="margin-top:8px;font-size:13px;line-height:1.8;">🔋 Battery &lt;10%<br>💥 Collision detected<br>🛞 Tire blowout<br>🚗 Tow needed</div></div>
-<div style="background:rgba(0,0,0,0.4);padding:14px;border-radius:12px;"><div style="font-size:11px;opacity:0.4;">LIVE CALL LOG</div><div id="callLog" style="margin-top:8px;font-size:12px;font-family:monospace;">• Waiting...</div></div>
+<div style="background:rgba(0,0,0,0.3);padding:14px;border-radius:12px;"><div style="font-size:11px;opacity:0.4;">ACTIVE CALLS</div><div style="margin-top:8px;font-size:13px;">ΓÅ░ 6:00 AM ΓÇö Wake-up + briefing<br>≡ƒô₧ Tomorrow ΓÇö Daily check-in 9PM</div></div>
+<div style="background:rgba(0,0,0,0.3);padding:14px;border-radius:12px;"><div style="font-size:11px;opacity:0.4;">QUICK SET</div><div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;"><span style="background:rgba(255,255,255,0.08);padding:6px 10px;border-radius:20px;font-size:11px;">Wake me at 6AM</span><span style="background:rgba(255,255,255,0.08);padding:6px 10px;border-radius:20px;font-size:11px;">Remind me in 2h</span><span style="background:rgba(255,255,255,0.08);padding:6px 10px;border-radius:20px;font-size:11px;">Call before meeting</span></div></div>
 </div>
-
-<button id="sosBtn" style="margin-top:20px;padding:14px 24px;background:#ef4444;border:none;border-radius:30px;color:white;font-weight:800;width:100%;cursor:pointer;">📞 CALL ROADSIDE NOW — 一键呼叫救援</button>
-<div style="font-size:10px;opacity:0.3;margin-top:10px;">Wired to BaymaxAPI.sos() • Sends GPS + VIN to 4S shop</div>
-</div>
-
-<script type="module">
-import { BaymaxAPI } from "../api.js";
-const logEl = document.getElementById('callLog');
-const btn = document.getElementById('sosBtn');
-
-function log(msg){ logEl.innerHTML += `<div style="margin-bottom:6px;">${msg}</div>`; }
-
-btn.addEventListener('click', async () => {
-  logEl.innerHTML = '';
-  log('● Getting GPS...');
-  log('● Battery: 8% - Critical');
-  
-  try{
-    const res = await BaymaxAPI.sos({
-      vin: "Xpeng G6 粤A·12345",
-      battery: "8%",
-      location: "Jurong, Guangzhou",
-      issue: "low_battery",
-      lang: "zh"
-    });
-    log(`✓ Connected to 4S: ${res.reply || '救援已派出'}`);
-    log('✓ ETA 12 mins - Location shared');
-    log('→ 救援电话: 400-123-4567');
-  } catch(e){
-    log('✓ Demo: 4S dispatched (offline mode)');
-    log('✓ ETA 12 mins • Truck #粤A-SOS-88');
-    log('→ 400-123-4567 - Stay in vehicle');
-  }
-});
-</script>
-</body></html>
+<button style="margin-top:20px;padding:12px 24px;background:#ff9600;border:none;border-radius:30px;color:black;font-weight:700;">+ Schedule New Call</button>
+</div></body></html>

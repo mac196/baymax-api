@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Parking - Baymax Auto</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px}
+.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:20px}
+.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;font-size:12px}
+.badge{background:rgba(168,85,247,0.15);border:1px solid #A855F7;color:#A855F7;padding:5px 14px;border-radius:20px;font-size:11px}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;margin-top:20px}
+.slot{padding:10px;border-radius:10px;display:flex;justify-content:space-between;cursor:pointer;transition:0.2s}
+.slot:hover{background:rgba(168,85,247,0.15)!important}
+</style></head><body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">VALET + 哨兵 • HPA记忆泊车</span></div>
+<div class="badge">🅿️ VALET MEMORY + 哨兵 • 天河城记忆 • 50m寻迹</div>
+<h1 style="margin-top:12px;font-size:34px;">PARKING <span style="color:#A855F7;">BAYMAX</span></h1>
+<p style="opacity:0.5;font-size:12px;">已记忆 3 个车位 — 天河城B2 最常用 • 自动寻迹泊车</p>
+<div class="card">
+<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px">
+<div>
+<div id="parkingMap" style="background:radial-gradient(circle at center, rgba(168,85,247,0.15), black);border-radius:16px;height:260px;border:1px dashed rgba(168,85,247,0.4);display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;">
+<div style="font-size:42px;" id="carIcon">🚗💨</div>
+<div style="margin-top:8px;font-size:13px;opacity:0.8;" id="parkingText">记忆泊车轨迹 — 50m • 点击开始</div>
+<div style="font-size:10px;opacity:0.4;margin-top:4px;">HPA已学习你的路线</div>
+<div style="margin-top:12px;width:80%;height:4px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden"><div id="prog" style="width:0%;height:100%;background:#A855F7;transition:width 2s"></div></div>
+</div>
+<div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<button id="autoParkBtn" style="padding:12px;background:#A855F7;border:none;border-radius:12px;color:white;font-weight:800;cursor:pointer;">▶️ 自动泊入 B2-128</button>
+<button id="summonBtn" style="padding:12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:white;cursor:pointer;">📍 召唤到电梯口</button>
+</div>
+<div id="parkStatus" style="font-size:10px;opacity:0.4;text-align:center;margin-top:8px;">Ready • 哨兵在线</div>
+</div>
+<div>
+<div style="background:rgba(0,0,0,0.4);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,0.08);">
+<div style="font-size:11px;opacity:0.6;letter-spacing:1px;">已记忆车位 • 3个</div>
+<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;font-size:12px">
+<div class="slot" style="background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.25);"><span>🏠 家 — B1-06</span><span>✔ 常用</span></div>
+<div class="slot" style="background:rgba(255,255,255,0.05);" onclick="selectSlot('B2-128')"><span>🏢 公司 — B2-128</span><span>42次</span></div>
+<div class="slot" style="background:rgba(255,255,255,0.05);" onclick="selectSlot('天河城 B2')"><span>🛒 天河城 — B2</span><span>常用</span></div>
+</div>
+</div>
+<div style="margin-top:12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:12px;font-size:11px;line-height:1.6;">
+<div>🛡️ 哨兵模式: 昨晚检测到电动车靠近2次，已录像 23:42</div>
+<div style="margin-top:4px;opacity:0.7;">粤语提醒: 有人掂到你架车，睇下哨兵录像啦 — Baymax已推送</div>
+<div style="margin-top:8px;display:flex;gap:6px;"><button style="padding:6px 10px;background:rgba(239,68,68,0.2);border:1px solid #EF4444;border-radius:8px;color:white;font-size:10px;cursor:pointer;">▶️ 查看录像</button><button style="padding:6px 10px;background:rgba(255,255,255,0.08);border-radius:8px;color:white;font-size:10px;border:none;cursor:pointer;">忽略</button></div>
+</div>
+</div>
+</div>
+</div>
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+const prog=document.getElementById('prog'), car=document.getElementById('carIcon'), text=document.getElementById('parkingText'), statusEl=document.getElementById('parkStatus');
+
+function selectSlot(name){
+  text.innerText=`已选 ${name} — 准备泊入`;
+  statusEl.innerText=`✓ 已选 ${name}`;
+}
+
+async function doPark(){
+  text.innerText='● 自动泊车中... 记忆寻迹 50m';
+  statusEl.innerText='● 泊车中... 请留意周围';
+  prog.style.width='20%';
+  car.innerText='🚗';
+  setTimeout(()=>{ prog.style.width='60%'; car.innerText='🚗💨'; text.innerText='转弯中... 精准对位'; }, 800);
+  setTimeout(()=>{ prog.style.width='100%'; car.innerText='✅'; text.innerText='已泊入 B2-128 • 一次到位'; statusEl.innerText='✓ 泊入完成 — 哨兵已开启'; try{ BaymaxAPI.speakCantonese('已帮你泊好车啦，放心去行街啦'); }catch{} }, 2200);
+}
+
+window.selectSlot = selectSlot;
+document.getElementById('autoParkBtn').onclick=doPark;
+document.getElementById('parkingMap').onclick=doPark;
+document.getElementById('summonBtn').onclick=()=>{
+  text.innerText='● 召唤中... 车正开到电梯口';
+  statusEl.innerText='● 召唤中 — 预计1分钟到达';
+  prog.style.width='40%';
+  setTimeout(()=>{ text.innerText='已到达电梯口 — 门已解锁'; statusEl.innerText='✓ 已到达'; prog.style.width='100%'; }, 1500);
+};
+</script>
+</body></html>

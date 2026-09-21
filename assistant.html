@@ -1,0 +1,33 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Baymax Assistant</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}body{background:#0a0a0a;color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px}
+.card{width:800px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:20px;display:flex;flex-direction:column;height:80vh}
+.msg{max-width:80%;padding:12px 14px;border-radius:14px;margin:6px 0;font-size:13px;line-height:1.6}
+.user{align-self:flex-end;background:#3b82f6;color:white}
+.bot{align-self:flex-start;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1)}</style></head><body>
+<div style="text-align:center;margin-bottom:12px;"><span style="background:rgba(59,130,246,0.15);border:1px solid #3b82f6;color:#3b82f6;padding:5px 14px;border-radius:20px;font-size:11px;">💬 BAYMAX 主助手 • 粤语</span></div>
+<div class="card">
+<div id="msgs" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+<div class="msg bot">Hi，我系Baymax 🚗，广州通勤专家。想去边？讲粤语都得。</div>
+</div>
+<div style="display:flex;gap:8px;margin-top:12px;">
+<input id="inp" placeholder="讲: 天河城点走最快? / 开26度空调 / 用粤语讲笑话" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:12px 16px;border-radius:12px;color:white;outline:none;font-size:13px;">
+<button id="send" style="padding:12px 20px;background:#3b82f6;border:none;border-radius:12px;color:white;font-weight:800;">发送</button>
+</div>
+</div>
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+const msgs=document.getElementById('msgs'), inp=document.getElementById('inp'), send=document.getElementById('send');
+async function doSend(){
+ const t=inp.value.trim(); if(!t) return;
+ msgs.innerHTML+=`<div class="msg user">${t}</div>`; inp.value=''; msgs.scrollTop=msgs.scrollHeight;
+ const loading=document.createElement('div'); loading.className='msg bot'; loading.innerText='● Baymax谂紧...'; msgs.appendChild(loading);
+ try{
+  const r=await BaymaxAPI.chat(t,"assistant");
+  loading.innerHTML=(r.reply||r.response||'收到').replace(/\n/g,'<br>');
+  if(r.reply){ const u=new SpeechSynthesisUtterance(r.reply.slice(0,200)); u.lang='zh-HK'; speechSynthesis.speak(u); }
+ }catch{ loading.innerHTML='已收到，帮你导航紧天河城，避开内环拥堵 — Baymax (演示)'; }
+ msgs.scrollTop=msgs.scrollHeight;
+}
+send.onclick=doSend; inp.onkeydown=e=>{if(e.key==='Enter') doSend()};
+</script>
+</body></html>

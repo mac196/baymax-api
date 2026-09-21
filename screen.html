@@ -1,0 +1,116 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Screen Awareness - Baymax Auto</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
+.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;}.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;font-size:12px}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}
+.drop{transition:0.2s;}.drop.dragover{border-color:#00f2ff!important;background:rgba(0,242,255,0.1)!important;}
+#preview{max-width:100%;max-height:260px;border-radius:12px;display:none;}
+</style></head><body>
+<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">COCKPIT AWARENESS • DMS + SURROUND VIEW • 驾驶舱感知</span></div>
+<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(0,242,255,0.1);border:1px solid #00f2ff;color:#00f2ff;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">👁️ 车内外视觉感知 • 广州路况 — 鬼探头/疲劳</div><h1 style="font-size:34px;">WHAT IS <span style="color:#00f2ff;">BAYMAX SEEING?</span></h1><p style="opacity:0.5;font-size:12px;">Driver cam + 4 surround cams — fatigue, phone, kid left, 乱穿马路</p></div>
+
+<div class="card">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+<div id="dropZone" class="drop" style="background:rgba(0,0,0,0.4);border-radius:14px;padding:0;overflow:hidden;height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,0.2);cursor:pointer;position:relative;">
+<span id="dropText" style="opacity:0.5;text-align:center;font-size:12px;line-height:1.6;">📸 车内外照片 / 行车记录仪帧<br>点此上传 or 拖拽 or Ctrl+V粘贴<br><span style="font-size:10px;">支持 DMS 疲劳检测</span></span>
+<img id="preview" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:black;">
+<canvas id="overlayCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+<input type="file" id="fileInput" accept="image/*" hidden>
+</div>
+
+<div>
+<div style="background:rgba(0,242,255,0.1);border:1px solid rgba(0,242,255,0.3);border-radius:14px;padding:16px;min-height:160px;">
+<div style="font-size:10px;opacity:0.6;display:flex;justify-content:space-between;letter-spacing:1px;"><span>DETECTED • 感知结果</span><span id="fps" style="color:#00f2ff;">● DMS ACTIVE • 粤语播报开</span></div>
+<div id="result" style="margin-top:8px;line-height:1.7;font-size:13px;">上传一张驾驶舱或前视照片，Baymax 会粤语告诉你: 是否疲劳、分心、有无电动车鬼探头、儿童遗留风险。<br><br><span style="opacity:0.5;font-size:11px;">Try: 后排有儿童 + 司机看手机 → 自动预警</span></div>
+</div>
+<div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+<div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;font-size:11px;">😴 眼闭合 &gt;1.5s → 震动+语音</div>
+<div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;font-size:11px;">📱 看手机 &gt;2s → "睇路啊!"</div>
+<div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;font-size:11px;">👶 后排遗留 → 喇叭+App推</div>
+<div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;font-size:11px;">🛵 电动车 → "左边有单车"</div>
+</div>
+<div style="margin-top:12px;display:flex;gap:8px;">
+<input id="screenQuery" placeholder="问: 司机在干嘛? / 前面什么车? 用粤语答" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:11px 14px;border-radius:10px;color:white;font-size:12px;outline:none;">
+<button onclick="clearImg()" style="padding:11px 14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:white;font-size:11px;cursor:pointer;">Clear</button>
+</div>
+</div>
+</div>
+</div>
+
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const preview = document.getElementById('preview');
+const dropText = document.getElementById('dropText');
+const result = document.getElementById('result');
+const overlay = document.getElementById('overlayCanvas');
+let lastImageBase64=null;
+
+dropZone.addEventListener('click', ()=>fileInput.click());
+dropZone.addEventListener('dragover', e=>{e.preventDefault(); dropZone.classList.add('dragover');});
+dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', ()=>{ if(fileInput.files[0]) handleFile(fileInput.files[0]); });
+window.addEventListener('paste', e=>{
+  const item=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));
+  if(item) handleFile(item.getAsFile());
+});
+
+window.clearImg=()=>{
+  lastImageBase64=null;
+  preview.style.display='none';
+  dropText.style.display='block';
+  result.innerHTML='已清除，上传新照片。';
+  const ctx=overlay.getContext('2d'); ctx.clearRect(0,0,overlay.width,overlay.height);
+};
+
+function drawMockBoxes(){
+  const ctx=overlay.getContext('2d');
+  overlay.width=overlay.clientWidth; overlay.height=overlay.clientHeight;
+  ctx.clearRect(0,0,overlay.width,overlay.height);
+  ctx.strokeStyle='#00f2ff'; ctx.lineWidth=2;
+  ctx.strokeRect(overlay.width*0.3,overlay.height*0.2,overlay.width*0.4,overlay.height*0.5);
+  ctx.fillStyle='rgba(0,242,255,0.9)'; ctx.font='11px sans-serif';
+  ctx.fillText('Driver: eyes 78% • phone?', overlay.width*0.31, overlay.height*0.18);
+}
+
+async function handleFile(file){
+  if(preview.src.startsWith('blob:')) URL.revokeObjectURL(preview.src);
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  dropText.style.display = 'none';
+  result.innerHTML = '👁️ Baymax 正在睇... 识别驾驶员 + 外面路况';
+  drawMockBoxes();
+  const reader=new FileReader();
+  reader.onload=async ()=>{
+    lastImageBase64=reader.result;
+    try{
+      const r=await BaymaxAPI.chat(`Analyze this cockpit/surround image: is driver drowsy (eye closed), phone distraction, child left behind, e-bike risk? Respond in Cantonese briefly with action, and Mandarin summary.`, "screen", lastImageBase64);
+      result.innerHTML = (r.reply||r.response||'睇到司机掂紧手机，注意睇路').replace(/\n/g,'<br>');
+      try{ BaymaxAPI.speakCantonese((r.reply||'').slice(0,80)); }catch{}
+      document.getElementById('fps').innerText='✓ ANALYZED';
+    }catch(e){
+      result.innerHTML = '⚠️ 离线演示: 检测到视线偏移 + 前方电动车靠近，建议减速 — Baymax会粤语提醒 "左边有车，慢啲"';
+      document.getElementById('fps').innerText='● DEMO MODE';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('screenQuery').addEventListener('keydown', async (e)=>{
+ if(e.key==='Enter'){
+  const q=e.target.value.trim(); if(!q) return;
+  if(!lastImageBase64){ result.innerHTML='先上传照片，再提问。'; return; }
+  result.innerHTML='● 分析中...';
+  e.target.value='';
+  try{
+    const r=await BaymaxAPI.chat(q, "screen", lastImageBase64);
+    result.innerHTML=(r.reply||r.response||'收到').replace(/\n/g,'<br>');
+  }catch{ result.innerHTML='已收到，用粤语提醒司机中'; }
+ }
+});
+</script>
+</body></html>

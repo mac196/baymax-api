@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Child Presence - Baymax</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}body{background:radial-gradient(circle at top,#2e1a1a 0%,#0a0a0a 100%);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 20px}
+.badge{background:rgba(239,68,68,0.15);border:1px solid #EF4444;color:#EF4444;padding:5px 14px;border-radius:20px;font-size:11px}
+.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;margin-top:20px}</style></head><body>
+<div class="badge">👶 CPD • 后排生命体征监测 • 国标GB</div>
+<h1 style="margin-top:12px;font-size:34px;">CHILD <span style="color:#EF4444;text-shadow:0 0 12px #EF4444;">PROTECTION</span></h1>
+<p style="opacity:0.5;font-size:12px;margin-top:6px;">60GHz毫米波雷达 + 后排相机 — 遗留就报警开空调</p>
+<div class="card">
+<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">
+<div>
+<div id="radarViz" style="background:black;border-radius:16px;height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(239,68,68,0.3)">
+<div style="font-size:48px;">👶</div>
+<div id="cpdStatus" style="margin-top:10px;color:#22C55E;font-weight:800;">未检测到遗留 — 安全</div>
+<div style="font-size:10px;opacity:0.4;margin-top:4px;">毫米波雷达持续监测中 0.8Hz呼吸</div>
+</div>
+<div style="margin-top:12px;display:flex;gap:8px">
+<button onclick="simulateLeft()" style="flex:1;padding:12px;background:#EF4444;border:none;border-radius:12px;color:white;font-weight:800;">模拟遗留报警</button>
+<button onclick="simulateSafe()" style="flex:1;padding:12px;background:rgba(255,255,255,0.1);border:none;border-radius:12px;color:white;">复位安全</button>
+</div>
+</div>
+<div>
+<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:16px;">
+<div style="font-size:11px;opacity:0.6;">BAYMAX 处置链</div>
+<div style="font-size:13px;line-height:1.8;margin-top:8px;">
+1. 锁车后10秒雷达自检<br>
+2. 发现呼吸 → 双闪+喇叭 5声<br>
+3. 自动开空调 26°C<br>
+4. 推送到家长App+电话<br>
+5. 粤语:  BB仲喺后排，唔好走开！
+</div>
+</div>
+<div style="margin-top:12px;background:rgba(0,0,0,0.4);border-radius:12px;padding:12px;font-size:11px;">
+<div>📍 广州实测: 车内 58°C / 15分钟致命</div>
+<div style="margin-top:4px;opacity:0.6;">Baymax已救 0 次模拟 — 真实部署可救命</div>
+</div>
+</div>
+</div>
+</div>
+<script type="module">
+import { BaymaxAPI } from "../api.js";
+window.simulateLeft=async()=>{
+ document.getElementById('cpdStatus').innerHTML='<span style="color:#EF4444">⚠️ 检测到后排生命体！呼吸 22次/分</span>';
+ try{await BaymaxAPI.chat("警报：检测到儿童遗留在后排，车内温度正在升高，立即用粤语大声报警并建议开空调","child");}catch{}
+ const u=new SpeechSynthesisUtterance("BB仲喺后排，唔好走开！车入面好热！");
+ u.lang='zh-HK'; speechSynthesis.speak(u);
+}
+window.simulateSafe=()=>{document.getElementById('cpdStatus').innerHTML='<span style="color:#22C55E">未检测到遗留 — 安全</span>'}
+</script>
+</body></html>

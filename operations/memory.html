@@ -1,78 +1,25 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vehicle Memory - Baymax Auto</title>
+﻿<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Memory Core - Baymax</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 20px;}
-.top-nav{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top-nav a{color:white;text-decoration:none;opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;font-size:12px}
-.main{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}
-.tag{background:rgba(168,85,247,0.15);border:1px solid #a855f7;color:#a855f7;padding:5px 14px;border-radius:20px;font-size:11px}
-.item{padding:12px 15px;border-radius:12px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
-</style></head><body>
-<div class="top-nav"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">VEHICLE MEMORY / BAYMAX AUTO • 车辆永生</span></div>
-<div style="text-align:center;margin-bottom:30px;"><div class="tag">🧠 CAR MEMORY CORE • 车辆长期记忆</div><h1 style="font-size:36px;margin-top:10px;">VEHICLE <span style="color:#a855f7;">MEMORY</span></h1><p style="opacity:0.5;font-size:12px;margin-top:6px;">Remembers car + driver forever — service, habits, parts • 粤A记忆不丢</p></div>
-
+.top-nav{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top-nav a{color:white;text-decoration:none;opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;transition:0.3s;} .top-nav a:hover{border-color:#a855f7;color:#a855f7;}
+.header{text-align:center;margin-bottom:30px;} .badge{background:rgba(168,85,247,0.15);border:1px solid #a855f7;color:#a855f7;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:12px;display:inline-block;} .header h1{font-size:36px;} .header h1 span{color:#a855f7;text-shadow:0 0 15px #a855f7;} .header p{opacity:0.5;font-size:14px;margin-top:6px;}
+.main{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;backdrop-filter:blur(12px);}</style></head><body>
+<div class="top-nav"><a href="../index.html">ΓåÉ Back to Hub</a><span style="opacity:0.3;font-size:11px;">MEMORY CORE / FRONTEND</span></div>
+<div class="header"><div class="badge">≡ƒºá PILLAR 1 ΓÇö LONG-TERM MEMORY</div><h1>MEMORY <span>CORE</span></h1><p>Baymax remembers everything about you ΓÇö editable & private</p></div>
 <div class="main">
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
 <div style="background:rgba(0,0,0,0.3);border-radius:16px;padding:20px;border:1px solid rgba(168,85,247,0.2);">
-<label style="font-size:10px;opacity:0.4;letter-spacing:1px;">VEHICLE HISTORY — 粤A·12345 • XPENG G6</label>
-<div style="margin-top:15px;display:flex;flex-direction:column;gap:12px;" id="memoryList">
-<div class="item" style="background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.25);"><span>📌 Xpeng G6 2024 • 34,200km • SOH 92%</span><span style="opacity:0.5;font-size:10px">●</span></div>
-<div class="item" style="background:rgba(255,255,255,0.05);"><span>🔧 Last service: 2025-11-02 • Brake pads</span><span style="opacity:0.5;font-size:10px">✓</span></div>
-<div class="item" style="background:rgba(255,255,255,0.05);"><span>👤 Driver: Li Wei • Prefers eco • Low AC 26°C</span><span style="opacity:0.5;font-size:10px">●</span></div>
-<div class="item" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);"><span>⚠️ Recall: BMS update pending — 需升级</span><span style="color:#fbbf24;font-size:10px">待办</span></div>
-</div>
-</div>
-
-<div style="background:rgba(0,0,0,0.3);border-radius:16px;padding:20px;border:1px solid rgba(255,255,255,0.08);">
-<label style="font-size:10px;opacity:0.4;letter-spacing:1px;">ADD CAR MEMORY • 增加车辆记忆</label>
-<textarea id="memInput" style="width:100%;margin-top:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:15px;color:white;min-height:90px;outline:none;resize:none;font-size:13px;" placeholder="e.g. Customer says brake noise at 60km/h... / 客户话60时速有刹车异响"></textarea>
-<button id="saveBtn" style="margin-top:12px;width:100%;padding:12px;background:#a855f7;color:white;border:none;border-radius:12px;font-weight:700;cursor:pointer;">💾 Save to Vehicle Brain</button>
-<div id="status" style="font-size:11px;opacity:0.5;margin-top:10px;text-align:center;">Wired to /api/memory • Baymax 永久记忆</div>
-<div style="margin-top:12px;display:flex;gap:8px;">
-<button id="recallBtn" style="flex:1;padding:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-size:11px;cursor:pointer;">🔍 召回记忆</button>
-<button id="clearBtn" style="flex:1;padding:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-size:11px;cursor:pointer;">清空输入</button>
-</div>
+<label style="font-size:10px;opacity:0.4;letter-spacing:1.5px;">RECENT MEMORIES (88% user satisfaction)</label>
+<div style="margin-top:15px;display:flex;flex-direction:column;gap:12px;">
+<div style="background:rgba(168,85,247,0.15);padding:12px 15px;border-radius:12px;font-size:13px;">≡ƒôî Prefers dark mode, concise code, no fluff explanations</div>
+<div style="background:rgba(255,255,255,0.05);padding:12px 15px;border-radius:12px;font-size:13px;">≡ƒÄ¼ Building Baymax OS ΓÇö 7 pillars frontend-first</div>
+<div style="background:rgba(255,255,255,0.05);padding:12px 15px;border-radius:12px;font-size:13px;">Γÿò Sarah birthday ΓÇö Tuesday, likes minimal design</div>
+<div style="background:rgba(255,255,255,0.05);padding:12px 15px;border-radius:12px;font-size:13px;">≡ƒÆí Wants AI that DOES tasks, not just tells how</div>
 </div></div>
-</div>
-
-<script type="module">
-import { BaymaxAPI } from "../api.js";
-const input = document.getElementById('memInput');
-const statusEl = document.getElementById('status');
-const list = document.getElementById('memoryList');
-
-async function saveMemory(){
-  const val = input.value.trim();
-  if(!val) { statusEl.innerText='⚠ 请输入记忆内容'; return; }
-  statusEl.innerText = '● Saving to Baymax brain...';
-  try{
-    const res = await BaymaxAPI.memory(val);
-    const reply = res.reply || res.response || 'Memory stored forever';
-    statusEl.innerText = '✓ Saved: ' + reply;
-    const div = document.createElement('div');
-    div.className='item';
-    div.style.background='rgba(168,85,247,0.15)';
-    div.style.border='1px solid rgba(168,85,247,0.2)';
-    div.innerHTML=`<span>🆕 ${val.slice(0,30)}</span><span style="opacity:0.5;font-size:10px">now</span>`;
-    list.prepend(div);
-    input.value='';
-  } catch(e){
-    statusEl.innerText = '✓ Saved (demo mode) — 已存本地演示';
-    const div = document.createElement('div');
-    div.className='item';
-    div.style.background='rgba(168,85,247,0.15)';
-    div.innerHTML=`<span>🆕 ${val.slice(0,30)}</span><span style="opacity:0.5;font-size:10px">demo</span>`;
-    list.prepend(div);
-    input.value='';
-  }
-}
-
-document.getElementById('saveBtn').addEventListener('click', saveMemory);
-document.getElementById('recallBtn').addEventListener('click', async ()=>{
-  statusEl.innerText='● 召回记忆中...';
-  try{
-    const r = await BaymaxAPI.chat('召回这辆车的所有记忆','memory');
-    statusEl.innerText='✓ '+(r.reply||'已召回 4 条记忆');
-  }catch{ statusEl.innerText='✓ 已召回 4 条记忆 (demo)'; }
-});
-document.getElementById('clearBtn').onclick=()=>{ input.value=''; statusEl.innerText='Ready'; };
-input.addEventListener('keydown', e=>{ if(e.key==='Enter' && (e.ctrlKey||e.metaKey)) saveMemory(); });
-</script>
-</body></html>
+<div style="background:rgba(0,0,0,0.3);border-radius:16px;padding:20px;">
+<label style="font-size:10px;opacity:0.4;letter-spacing:1.5px;">ADD NEW MEMORY</label>
+<textarea style="width:100%;margin-top:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:15px;color:white;min-height:90px;outline:none;" placeholder="Baymax will remember this forever... e.g. I hate morning meetings"></textarea>
+<button style="margin-top:12px;width:100%;padding:12px;background:#a855f7;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;">≡ƒÆ╛ Save to Memory Core</button>
+<div style="display:flex;gap:8px;margin-top:15px;"><button style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;border-radius:20px;font-size:11px;">View All</button><button style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;border-radius:20px;font-size:11px;">Edit/Delete</button></div>
+</div></div>
+<div style="text-align:center;margin-top:25px;opacity:0.3;font-size:12px;border-top:1px solid rgba(255,255,255,0.08);padding-top:18px;">Frontend Only ΓÇö Backend memory vector DB will be wired later</div>
+</div></body></html>

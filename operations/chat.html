@@ -1,67 +1,146 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Driver Monitoring - Baymax Auto</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
-.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;}.top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;}
-.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;}
-</style></head><body>
-<div class="top"><a href="../index.html">← Hub</a><span style="opacity:0.3;font-size:11px;">DMS / CABIN CAMERA • C-NCAP</span></div>
-<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(0,242,255,0.1);border:1px solid #00f2ff;color:#00f2ff;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">👁️ DRIVER MONITORING — 红外摄像头</div><h1 style="font-size:34px;">WHAT IS <span style="color:#00f2ff;">DRIVER DOING?</span></h1><p style="opacity:0.5;">Fatigue, phone, smoking, child left — 1 camera, on-device</p></div>
+﻿<!DOCTYPE html>
+<html>
+<head>
+<title>BAYMAX OS ΓÇó HERO 6</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter','Segoe UI',sans-serif;}
+  body{background:#05050a; color:white; height:100vh; display:flex; flex-direction:column; overflow:hidden; position:relative;}
+  
+  /* HIGH CONTRAST NEON - NO GRID NOW */
+  .orb{position:fixed; border-radius:50%; filter:blur(35px); animation:float 6s ease-in-out infinite; pointer-events:none; mix-blend-mode:screen;}
+  .orb-orange{width:720px;height:720px;background:radial-gradient(circle, rgba(255,90,0,0.9) 0%, rgba(255,140,0,0.5) 25%, transparent 65%); top:-20%; left:-15%;}
+  .orb-blue{width:680px;height:680px;background:radial-gradient(circle, rgba(0,180,255,0.85) 0%, rgba(0,100,255,0.45) 30%, transparent 70%); bottom:-15%; right:-10%; animation-delay:-3s;}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-25px) scale(1.15)}}
 
-<div class="card">
-<div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:20px;">
-
-<div style="background:#000;border-radius:14px;overflow:hidden;height:320px;position:relative;display:flex;align-items:center;justify-content:center;">
-<video id="dmsCam" autoplay muted style="width:100%;height:100%;object-fit:cover;display:none;"></video>
-<div id="camPlaceholder" style="text-align:center;">
-<div style="font-size:48px;">👤</div>
-<div style="opacity:0.4;margin-top:10px;font-size:12px;">IR Cabin Camera Feed<br>720p • Night vision</div>
-<button onclick="startCam()" style="margin-top:14px;padding:8px 18px;background:#00f2ff;border:none;border-radius:20px;color:black;font-weight:700;">▶️ Start DMS Demo</button>
-</div>
-<canvas id="overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
-<div style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.6);padding:6px 12px;border-radius:20px;font-size:11px;">Eye: OPEN • Head: Front • Hands: Wheel</div>
-</div>
-
-<div>
-<div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:16px;">
-<div style="font-size:11px;opacity:0.6;">⚠️ REAL-TIME ALERTS</div>
-<div id="alerts" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;">
-<div style="background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;display:flex;justify-content:space-between;"><span>😴 Fatigue</span><span style="color:#22c55e;">OK — blink 12/min</span></div>
-<div style="background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;display:flex;justify-content:space-between;"><span>📱 Distraction</span><span style="color:#22c55e;">OK — eyes on road</span></div>
-<div style="background:rgba(239,68,68,0.2);padding:10px;border-radius:8px;display:flex;justify-content:space-between;"><span>👶 Child Left</span><span style="color:#ef4444;">CHECK REAR!</span></div>
-</div>
-</div>
-<div style="margin-top:12px;background:rgba(0,0,0,0.3);padding:14px;border-radius:12px;font-size:11px;line-height:1.6;">
-✓ On-device — no cloud<br>
-✓ C-NCAP 2025 compliant<br>
-✓ Works with sunglasses + night<br>
-✓ 粤语提醒: "眼困啦，休息下啦"
-</div>
-<button id="triggerBtn" style="margin-top:12px;width:100%;padding:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;border-radius:10px;">Test Fatigue Alert → AC + Music + Seat Vibrate</button>
-<div id="dmsStatus" style="text-align:center;font-size:11px;opacity:0.4;margin-top:8px;">DMS idle — start demo</div>
-</div>
-
-</div>
-</div>
-
-<script type="module">
-import { BaymaxAPI } from "../api.js";
-window.startCam = async () => {
-  try{
-    const stream = await navigator.mediaDevices.getUserMedia({video:true});
-    const v = document.getElementById('dmsCam');
-    v.srcObject = stream; v.style.display='block';
-    document.getElementById('camPlaceholder').style.display='none';
-    document.getElementById('dmsStatus').innerText='● DMS active — monitoring';
-  }catch(e){
-    document.getElementById('dmsStatus').innerText='Camera blocked — showing demo data';
+  /* GIANT ROUND BAYMAX HEAD - MOVIE ACCURATE */
+  .center-baymax{
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:520px; height:520px; z-index:1; opacity:0.22; pointer-events:none;
+    background: radial-gradient(circle at 32% 28%, #ffffff 0%, #fff8f5 25%, #ffe8df 55%, #ffccb8 85%);
+    border-radius:50%; /* PERFECTLY ROUND NOW */
+    box-shadow: 0 0 120px rgba(255,100,0,0.45), 0 0 220px rgba(0,180,255,0.3), inset -40px -30px 70px rgba(0,0,0,0.18), inset 20px 20px 40px rgba(255,255,255,0.9);
+    display:flex; align-items:center; justify-content:center;
+    animation: giantBreathe 4s ease-in-out infinite;
   }
+  @keyframes giantBreathe{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-52%) scale(1.04)}}
+  
+  /* FACE - Movie style */
+  .face{position:relative; width:240px; height:80px; display:flex; align-items:center; justify-content:center; gap:0; margin-top:10px;}
+  .eye{width:44px;height:44px;background:#0a0a0a;border-radius:50%; box-shadow:0 0 25px rgba(0,0,0,0.9); position:relative; z-index:2;}
+  .eye::after{content:""; position:absolute; top:20%; left:20%; width:32%; height:32%; background:white; border-radius:50%; opacity:0.9;}
+  .eye-bridge{width:90px;height:4px;background:#0a0a0a; margin:0 -8px; z-index:1; border-radius:2px;} /* The line between eyes */
+  
+  /* Mouth lol - tiny subtle line Baymax has when confused */
+  .mouth{position:absolute; bottom:-28px; left:50%; transform:translateX(-50%); width:18px; height:4px; background:rgba(0,0,0,0.25); border-radius:2px; opacity:0.6;}
+
+  .center-baymax.scanning{opacity:0.38; box-shadow: 0 0 160px rgba(255,90,0,0.75), 0 0 280px rgba(0,180,255,0.55);}
+  .center-baymax.scanning .eye{background:#ff2a00; box-shadow:0 0 45px #ff3b30;}
+  .center-baymax.scanning .eye-bridge{background:#ff2a00; box-shadow:0 0 15px #ff3b30;}
+  .center-baymax.scanning .mouth{background:#ff3b30; opacity:1; height:5px; width:24px;}
+
+  .heartbeat{position:fixed; bottom:95px; left:0; right:0; height:60px; z-index:2; pointer-events:none; opacity:0.6;}
+  .hug-btn{position:fixed; bottom:25px; left:25px; z-index:20; background: rgba(255,255,255,0.08); backdrop-filter:blur(15px); border:1px solid rgba(255,255,255,0.15); padding:12px 18px; border-radius:30px; cursor:pointer; font-size:13px; color:#ffb399; transition:0.3s; display:flex; align-items:center; gap:8px;}
+  .hug-btn:hover{background:rgba(255,90,0,0.2); transform:scale(1.05); color:white; box-shadow:0 0 20px rgba(255,90,0,0.4);}
+
+  .header{backdrop-filter:blur(25px); background:rgba(10,10,20,0.75); border-bottom:1px solid rgba(255,120,0,0.2); padding:18px 28px; display:flex; align-items:center; gap:16px; z-index:10;}
+  .logo{width:44px;height:44px;background:linear-gradient(135deg,#ff5a00,#ff8a00);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 0 25px rgba(255,90,0,0.7);}
+  #chat-box{flex:1;overflow-y:auto;padding:28px 26%;display:flex;flex-direction:column;gap:18px;z-index:3;}
+  @media(max-width:900px){#chat-box{padding:20px 5%;} .center-baymax{width:340px;height:340px;} .face{width:160px;} .eye{width:30px;height:30px;} .eye-bridge{width:55px;}}
+  .bubble{max-width:72%;padding:16px 20px;border-radius:18px;line-height:1.6;font-size:14.5px;backdrop-filter:blur(20px);animation:slide 0.3s ease; z-index:3;}
+  @keyframes slide{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .user{align-self:flex-end;background:linear-gradient(135deg,#ff5a00,#ff8a00);box-shadow:0 6px 25px rgba(255,90,0,0.5);border-bottom-right-radius:5px;}
+  .baymax{align-self:flex-start;background:rgba(10,15,30,0.7);border:1px solid rgba(0,180,255,0.25);box-shadow:0 4px 20px rgba(0,180,255,0.15);border-bottom-left-radius:5px;}
+  .input-area{backdrop-filter:blur(25px);background:rgba(10,10,20,0.85);border-top:1px solid rgba(0,180,255,0.2);padding:18px 26%;display:flex;gap:12px;z-index:10;}
+  @media(max-width:900px){.input-area{padding:16px 4%;}}
+  #msg{flex:1;padding:15px 20px;background:rgba(255,255,255,0.07);border:1px solid rgba(0,180,255,0.2);border-radius:30px;outline:none;color:white;}
+  #msg:focus{border-color:rgba(255,90,0,0.6); box-shadow:0 0 15px rgba(255,90,0,0.2);}
+  button.send{background:linear-gradient(135deg,#ff5a00,#ff8a00);color:white;border:none;padding:14px 26px;border-radius:30px;cursor:pointer;font-weight:700;box-shadow:0 5px 20px rgba(255,90,0,0.5);}
+</style>
+</head>
+<body>
+<div class="orb orb-orange"></div><div class="orb orb-blue"></div>
+
+<!-- GIANT ROUND BAYMAX WITH MOUTH -->
+<div class="center-baymax" id="giantBaymax">
+  <div class="face">
+    <div class="eye"></div>
+    <div class="eye-bridge"></div>
+    <div class="eye"></div>
+    <div class="mouth"></div>
+  </div>
+</div>
+
+<canvas class="heartbeat" id="heartbeat"></canvas>
+<div class="hug-btn" onclick="hug()" id="hugBtn">≡ƒñù Give Baymax a Hug</div>
+
+<div class="header">
+  <div class="logo">B</div>
+  <div><h2 style="font-size:16px;letter-spacing:1px;">BAYMAX OS ΓÇó HERO 6</h2><p style="font-size:10px;color:#88b4ff;letter-spacing:2px;">ROUND HEAD EDITION</p></div>
+  <div style="margin-left:auto; display:flex; gap:8px;">
+    <div style="background:rgba(0,180,255,0.15); border:1px solid rgba(0,180,255,0.3); padding:6px 12px; border-radius:20px; font-size:10px; color:#5bc0ff;">BLUE CORE</div>
+    <div style="background:rgba(255,90,0,0.15); border:1px solid rgba(255,90,0,0.3); padding:6px 12px; border-radius:20px; font-size:10px; color:#ffb07a;">ORANGE WARMTH</div>
+  </div>
+</div>
+
+<div id="chat-box">
+  <div class="bubble baymax">Hello, I am Baymax. My head is now 100% round. My eyes are connected. I even have a little mouth. ≡ƒÿè<br>Balalala~ How can I help?</div>
+</div>
+
+<div class="input-area">
+  <input id="msg" placeholder="Talk to round Baymax..." onkeypress="if(event.key==='Enter')send()">
+  <button class="send" onclick="send()">Γû▓</button>
+</div>
+
+<script>
+const box = document.getElementById("chat-box");
+const giant = document.getElementById("giantBaymax");
+const canvas = document.getElementById("heartbeat");
+const ctx = canvas.getContext("2d");
+function resize(){canvas.width=canvas.offsetWidth*2; canvas.height=canvas.offsetHeight*2;} resize(); window.onresize=resize;
+let t=0;
+function drawHeartbeat(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle="rgba(255,90,0,0.9)"; ctx.lineWidth=3; ctx.beginPath();
+  for(let x=0;x<canvas.width;x++){
+    let y = canvas.height/2 + Math.sin((x*0.02)+t)*10 + (Math.random()>0.995 ? (Math.random()*50-25) : 0);
+    if(x==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.strokeStyle="rgba(0,180,255,0.7)"; ctx.lineWidth=2; ctx.beginPath();
+  for(let x=0;x<canvas.width;x++){
+    let y = canvas.height/2 + Math.cos((x*0.015)+t*0.8)*12;
+    if(x==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  t+=0.08; requestAnimationFrame(drawHeartbeat);
 }
-document.getElementById('triggerBtn').onclick = async () => {
-  document.getElementById('dmsStatus').innerText='● Triggering: fatigue response...';
+drawHeartbeat();
+
+function hug(){
+  giant.style.transform="translate(-50%,-50%) scale(1.28)";
+  giant.style.opacity="0.55";
+  document.getElementById("hugBtn").innerText="≡ƒÆû *ba-la-la-la* inflated!";
+  box.innerHTML+=`<div class="bubble baymax">*puffs up* ≡ƒñù Hello, I am Baymax. That hug increased my battery by 20%.</div>`;
+  box.scrollTop=box.scrollHeight;
+  setTimeout(()=>{giant.style.transform="translate(-50%,-50%) scale(1)"; giant.style.opacity="0.22";},1200);
+  setTimeout(()=>{document.getElementById("hugBtn").innerText="≡ƒñù Give Baymax a Hug";},2500);
+}
+
+async function send(){
+  const input = document.getElementById("msg");
+  const text = input.value.trim(); if(!text) return;
+  box.innerHTML+=`<div class="bubble user">${text}</div>`; input.value=""; box.scrollTop=box.scrollHeight;
+  giant.classList.add("scanning");
+  const thinking=document.createElement("div"); thinking.className="bubble baymax"; thinking.id="thinking"; thinking.innerText="Γûî Round Baymax is scanning..."; box.appendChild(thinking); box.scrollTop=box.scrollHeight;
   try{
-    await BaymaxAPI.chat("Driver fatigue detected, execute response", "dms");
-    document.getElementById('dmsStatus').innerText='✓ AC cold, window 10%, seat vibrate, 粤语提醒 sent';
-    document.getElementById('alerts').innerHTML = '<div style="background:rgba(239,68,68,0.3);padding:10px;border-radius:8px;display:flex;justify-content:space-between;"><span>😴 Fatigue</span><span style="color:#ef4444;">DETECTED → Responding</span></div>'+document.getElementById('alerts').innerHTML;
-  }catch(e){ document.getElementById('dmsStatus').innerText='✓ Fatigue response demo'; }
+    const res=await fetch("http://127.0.0.1:8000/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text})});
+    const data=await res.json(); let clean=data.reply.replace(/\*\*/g,"").replace(/\|/g," ").replace(/---/g,"");
+    document.getElementById("thinking").remove();
+    box.innerHTML+=`<div class="bubble baymax">${clean}</div>`; box.scrollTop=box.scrollHeight;
+  }catch(e){document.getElementById("thinking").innerText="ΓÜá∩╕Å Backend offline";}
+  finally{setTimeout(()=>giant.classList.remove("scanning"),700);}
 }
 </script>
-</body></html>
+</body>
+</html>
