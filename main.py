@@ -14,8 +14,11 @@ load_dotenv()
 try:
     from llama_brain import get_baymax_reply
 except ImportError:
-    def get_baymax_reply(msg, mode="auto", lang="yue", image_b64=None):
-        return f"Baymax [{mode}] heard: {msg}"
+    try:
+        from backend.llama_brain import get_baymax_reply
+    except:
+        def get_baymax_reply(msg, mode="auto", lang="yue", image_b64=None):
+            return f"Baymax [{mode}] heard: {msg}"
 
 app = FastAPI(title="Baymax Auto OS v2")
 
@@ -45,8 +48,16 @@ class TranslateRequest(BaseModel):
     from_lang: str = "en"
     to_lang: str = "fr"
 
-CURRENT_DIR = Path(__file__).parent
-DATA_FILE = CURRENT_DIR / "pulse_history.json"
+CURRENT_FILE = Path(__file__).resolve()
+# SMART BASE: find where index.html actually lives
+if (CURRENT_FILE.parent / "index.html").exists():
+    BASE = CURRENT_FILE.parent
+elif (CURRENT_FILE.parent.parent / "index.html").exists():
+    BASE = CURRENT_FILE.parent.parent
+else:
+    BASE = CURRENT_FILE.parent
+
+DATA_FILE = BASE / "pulse_history.json"
 if not DATA_FILE.exists():
     with open(DATA_FILE, "w") as f:
         json.dump([], f)
@@ -75,51 +86,36 @@ def translate_unlimited(text, src, tgt):
 
 @app.get("/health")
 def health():
-    has_key = bool(os.getenv("GROQ_API_KEY"))
     return {
         "status": "Baymax Auto OS online",
-        "groq_key_loaded": has_key,
+        "groq_key_loaded": bool(os.getenv("GROQ_API_KEY")),
         "version": "v2.0-car-14-systems",
-        "city": "guangzhou",
-        "cantonese": "95%",
+        "base": str(BASE),
         "timestamp": datetime.now().isoformat()
     }
 
 @app.get("/api")
 @app.get("/api/health")
 def api_home():
-    has_key = bool(os.getenv("GROQ_API_KEY"))
-    return {"status": "Baymax online", "groq_key_loaded": has_key}
+    return {"status": "Baymax online", "groq_key_loaded": bool(os.getenv("GROQ_API_KEY"))}
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    result = get_baymax_reply(
-        msg=req.message,
-        mode=req.mode,
-        lang=req.lang,
-        image_b64=req.image
-    )
+    result = get_baymax_reply(msg=req.message, mode=req.mode, lang=req.lang, image_b64=req.image)
     if isinstance(result, dict):
         return result
     return {"reply": result}
 
 @app.post("/api/translate")
 async def translate_text(req: TranslateRequest):
-    tgt = parse_lang(req.to_lang)
-    src = parse_lang(req.from_lang)
-    return {"translated": translate_unlimited(req.text, src, tgt)}
+    return {"translated": translate_unlimited(req.text, parse_lang(req.from_lang), parse_lang(req.to_lang))}
 
 @app.post("/api/screen-analyze")
 async def screen_analyze(file: UploadFile = File(...), lang: str = "yue"):
     content = await file.read()
     b64 = base64.b64encode(content).decode()
     mime = file.content_type or "image/jpeg"
-    result = get_baymax_reply(
-        msg=f"分析呢个画面, 用{lang}讲",
-        mode="screen",
-        lang=lang,
-        image_b64=f"data:{mime};base64,{b64}"
-    )
+    result = get_baymax_reply(msg=f"分析呢个画面, 用{lang}讲", mode="screen", lang=lang, image_b64=f"data:{mime};base64,{b64}")
     if isinstance(result, dict):
         return {"description": result.get("reply", str(result))}
     return {"description": result}
@@ -154,37 +150,48 @@ def get_latest():
     except:
         return {"bpm": 78}
 
-# --- FIXED FRONTEND MOUNT - MUST BE AFTER ALL API ROUTES ---
-BASE = CURRENT_DIR
-print(f"[Baymax] BASE={BASE}")
-print(f"[Baymax] JS exists={(BASE / 'JS').exists()} | css={(BASE / 'css').exists()} | operations={(BASE / 'operations').exists()} | index={(BASE / 'index.html').exists()}")
+# --- STATIC MOUNTS ---
+print(f"[Baymax] BASE={BASE} | index exists={(BASE/'index.html').exists()}")
+for folder in ["JS", "js", "css", "operations"]:
+    fp = BASE / folder
+    if fp.exists():
+        app.mount(f"/{folder}", StaticFiles(directory=str(fp)), name=folder)
+        print(f"[Baymax] Mounted /{folder}")
 
-if (BASE / "JS").exists():
-    app.mount("/JS", StaticFiles(directory=str(BASE / "JS")), name="js")
-    app.mount("/js", StaticFiles(directory=str(BASE / "JS")), name="js-lower")
-
-if (BASE / "css").exists():
-    app.mount("/css", StaticFiles(directory=str(BASE / "css")), name="css")
-
-if (BASE / "operations").exists():
-    app.mount("/operations", StaticFiles(directory=str(BASE / "operations")), name="ops")
-
+# Frontend - serve ANY html file from BASE or subfolders
 @app.get("/")
 async def serve_root():
     index = BASE / "index.html"
     if index.exists():
         return FileResponse(index)
-    return {"status": "Baymax running", "files": os.listdir(BASE)}
+    return {"error": "index.html not found", "base": str(BASE), "files": os.listdir(BASE)}
 
-# Catch-all for frontend files, but don't hijack API
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
-    if full_path.startswith("api/") or full_path in ["health", "chat", "docs", "openapi.json", "redoc"]:
-        return FileResponse(BASE / "index.html") if (BASE / "index.html").exists() else {"error": "not found"}
+    # skip api docs
+    if full_path.startswith(("api/", "docs", "openapi.json", "redoc")) or full_path in ["health", "chat"]:
+        return {"error": "not found"}
 
-    file_path = BASE / full_path
-    if file_path.is_file():
-        return FileResponse(file_path)
+    # 1. Direct file in BASE
+    fp = BASE / full_path
+    if fp.is_file():
+        return FileResponse(fp)
+
+    # 2. File inside operations / other folders - search for it
+    for sub in ["operations", "JS", "css", ""]:
+        test = BASE / sub / full_path
+        if test.is_file():
+            return FileResponse(test)
+        # also try just filename
+        test2 = BASE / sub / Path(full_path).name
+        if test2.is_file():
+            return FileResponse(test2)
+
+    # 3. If html requested but not found, return index (for SPA)
+    if full_path.endswith(".html"):
+        # list what exists to debug
+        ops = list((BASE / "operations").glob("*.html")) if (BASE / "operations").exists() else []
+        return {"status": "file not found", "requested": full_path, "base": str(BASE), "available_in_operations": [o.name for o in ops]}
 
     index = BASE / "index.html"
     if index.exists():
