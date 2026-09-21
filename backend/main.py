@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import json, os, requests, urllib.parse, base64
 from datetime import datetime
 from typing import Optional, Dict
-import pathlib
+from pathlib import Path
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -44,8 +44,9 @@ class TranslateRequest(BaseModel):
     from_lang: str = "en"
     to_lang: str = "fr"
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "pulse_history.json")
-if not os.path.exists(DATA_FILE):
+CURRENT_DIR = Path(__file__).parent
+DATA_FILE = CURRENT_DIR / "pulse_history.json"
+if not DATA_FILE.exists():
     with open(DATA_FILE, "w") as f:
         json.dump([], f)
 
@@ -102,9 +103,8 @@ def chat(req: ChatRequest):
 
 @app.post("/api/translate")
 async def translate_text(req: TranslateRequest):
-    src = parse_lang(req.from_lang)
-    tgt = parse_lang(req.to_lo_lang if hasattr(req, 'to_lo_lang') else req.to_lang)
     tgt = parse_lang(req.to_lang)
+    src = parse_lang(req.from_lang)
     return {"translated": translate_unlimited(req.text, src, tgt)}
 
 @app.post("/api/screen-analyze")
@@ -152,19 +152,19 @@ def get_latest():
     except:
         return {"bpm": 78}
 
-# --- Frontend mount (MUST BE LAST) ---
-CURRENT_DIR = pathlib.Path(__file__).parent
-BASE_DIR = CURRENT_DIR.parent
+# --- FRONTEND MOUNT (MUST BE LAST, FIXED) ---
+# Your real folders are in CURRENT_DIR (same folder as main.py)
+print(f"[Baymax] Mounting from: {CURRENT_DIR}")
+print(f"[Baymax] Has JS folder: {(CURRENT_DIR / 'JS').exists()}")
+print(f"[Baymax] Has operations: {(CURRENT_DIR / 'operations').exists()}")
 
-# Find where index.html actually lives (local vs Render)
-if (BASE_DIR / "index.html").exists():
-    FRONTEND_DIR = BASE_DIR
-elif (CURRENT_DIR / "index.html").exists():
-    FRONTEND_DIR = CURRENT_DIR
-else:
-    FRONTEND_DIR = BASE_DIR
+# Mount specific folders first (more specific first)
+if (CURRENT_DIR / "JS").exists():
+    app.mount("/JS", StaticFiles(directory=str(CURRENT_DIR / "JS")), name="js")
+if (CURRENT_DIR / "css").exists():
+    app.mount("/css", StaticFiles(directory=str(CURRENT_DIR / "css")), name="css")
+if (CURRENT_DIR / "operations").exists():
+    app.mount("/operations", StaticFiles(directory=str(CURRENT_DIR / "operations")), name="ops")
 
-print(f"[Baymax] Mounting frontend from: {FRONTEND_DIR}")
-
-if FRONTEND_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+# Mount root last
+app.mount("/", StaticFiles(directory=str(CURRENT_DIR), html=True), name="frontend")
