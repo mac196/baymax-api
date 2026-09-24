@@ -1,0 +1,2 @@
+self.addEventListener('install', e=>{e.waitUntil(caches.open('baymax-real-v1').then(c=>c.addAll(['/real','/assistant-real'])) )});
+self.addEventListener('fetch', e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});

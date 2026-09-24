@@ -197,3 +197,6 @@ async def serve_frontend(full_path: str):
     if index.exists():
         return FileResponse(index)
     return {"status": "Baymax online", "requested": full_path}
+    @app.route('/assistant-real')
+def assistant_real():
+    return render_template('assistant_real.html')

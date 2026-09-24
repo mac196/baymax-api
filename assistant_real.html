@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html><<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js')}</script>><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Baymax 粤语助手 - REAL</title></head>
+<body style="font-family:sans-serif;padding:20px;text-align:center">
+<h2>Baymax 粤语车载助手</h2>
+<p id="heard">点击开始讲粤语</p>
+<button onclick="listen()" style="padding:20px 40px;font-size:20px;border-radius:15px;background:#000;color:#fff">🎤 讲野</button>
+<p>试讲: "我头晕" / "求助" / "导航回家"</p>
+<script>
+let hr=0;
+function speakCanto(t){let u=new SpeechSynthesisUtterance(t);u.lang='zh-HK';u.rate=0.95;speechSynthesis.speak(u);}
+function listen(){
+  let Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let r=new Rec(); r.lang='yue-HK'; r.onresult=e=>{
+    let txt=e.results[0][0].transcript;
+    document.getElementById('heard').innerText='你讲: '+txt;
+    if(txt.includes('头晕')||txt.includes('唔舒服')||txt.includes('晕')){speakCanto('收到你话头晕，马上帮你测心率');location.href='/real';}
+    else if(txt.includes('求助')){navigator.geolocation.getCurrentPosition(p=>{let m=`求助 位置 https://maps.google.com/?q=${p.coords.latitude},${p.coords.longitude}`;window.open('https://wa.me/?text='+encodeURIComponent(m));speakCanto('已发送求助定位');});}
+    else{speakCanto('明白'+txt);}
+  }; r.start();
+}
+</script>
+</body></html>
