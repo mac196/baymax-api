@@ -1,13 +1,59 @@
-﻿<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Pulse - Baymax</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}body{background:radial-gradient(circle at top,#1a1a2e 0%,#0a0a0a 100%);color:white;display:flex;flex-direction:column;align-items:center;padding:30px 20px;min-height:100vh;}
-.top{width:900px;max-width:95%;display:flex;justify-content:space-between;margin-bottom:25px;} .top a{opacity:0.6;border:1px solid rgba(255,255,255,0.1);padding:8px 18px;border-radius:20px;color:white;text-decoration:none;} .top a:hover{border-color:#3b82f6;color:#3b82f6;}
-.card{width:900px;max-width:95%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:30px;backdrop-filter:blur(12px);}</style></head><body>
-<div class="top"><a href="../index.html">ΓåÉ Hub</a><span style="opacity:0.3;font-size:11px;">PULSE / OVERNIGHT</span></div>
-<div style="text-align:center;margin-bottom:25px;"><div style="display:inline-block;background:rgba(59,130,246,0.15);border:1px solid #3b82f6;color:#3b82f6;padding:5px 14px;border-radius:20px;font-size:11px;margin-bottom:10px;">≡ƒîà CHATGPT PULSE INSPIRED</div><h1 style="font-size:34px;">PULSE <span style="color:#3b82f6;text-shadow:0 0 15px #3b82f6;">MORNING</span></h1><p style="opacity:0.5;font-size:13px;margin-top:6px;">Runs overnight, pulls Gmail, Calendar, Chat ΓÇö swipeable cards</p></div>
-<div class="card">
-<div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:10px;">
-<div style="min-width:260px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:16px;padding:18px;"><div style="font-size:11px;opacity:0.5;">TODAY 7:00 AM</div><div style="margin-top:8px;font-weight:600;">Your mom's birthday in 2 days</div><div style="font-size:13px;opacity:0.7;margin-top:6px;">Drafted gift idea from your Photos + Gmail. Tap to buy.</div><button style="margin-top:12px;padding:6px 14px;background:#3b82f6;border:none;border-radius:20px;color:white;font-size:11px;">View Gift</button></div>
-<div style="min-width:260px;background:rgba(0,0,0,0.3);border-radius:16px;padding:18px;"><div style="font-size:11px;opacity:0.5;">CALENDAR</div><div style="margin-top:8px;font-weight:600;">3 meetings, first at 10AM</div><div style="font-size:13px;opacity:0.7;margin-top:6px;">I prepped notes + agenda for each.</div></div>
-<div style="min-width:260px;background:rgba(0,0,0,0.3);border-radius:16px;padding:18px;"><div style="font-size:11px;opacity:0.5;">EMAILS</div><div style="margin-top:8px;font-weight:600;">2 need reply</div><div style="font-size:13px;opacity:0.7;margin-top:6px;">Drafted, 1-tap approve to send.</div></div>
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Baymax 心率 - REAL</title>
+<style>body{font-family:sans-serif;text-align:center;padding:20px;background:#000;color:#fff} #bpm{font-size:80px;color:#0f0} #canvas{display:none}</style>
+</head>
+<body>
+<h2>Baymax 真实心率检测</h2>
+<p>手指完全盖住后置摄像头 + 闪光灯</p>
+<div id="bpm">--</div>
+<div id="status">准备就绪</div>
+<button onclick="start()" style="padding:15px 30px;font-size:18px;background:#0f0;border:none;border-radius:10px;">开始检测</button>
+<div id="sos" style="display:none;margin-top:20px;background:red;padding:15px;border-radius:10px;">
+  <p>⚠️ 心率异常！<span id="alert-bpm"></span></p>
+  <a id="sosLink" target="_blank" style="color:white;font-weight:bold;">一键求助家人(发定位)</a>
 </div>
-</div></body></html>
+<video id="v" autoplay playsinline style="width:1px;height:1px"></video>
+<canvas id="c"></canvas>
+<script>
+let hr=0, measuring=false, lastPeak=0, reds=[], bpms=[];
+function speak(t){let u=new SpeechSynthesisUtterance(t);u.lang='zh-HK';speechSynthesis.speak(u);}
+async function start(){
+  document.getElementById('status').innerText='正在启动摄像头...';
+  let stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  let v=document.getElementById('v'); v.srcObject=stream; await v.play();
+  // try torch
+  try{let track=stream.getVideoTracks()[0];await track.applyConstraints({advanced:[{torch:true}]})}catch(e){}
+  measuring=true; loop();
+}
+function loop(){
+  if(!measuring) return;
+  let v=document.getElementById('v'), c=document.getElementById('c'), ctx=c.getContext('2d');
+  c.width=50;c.height=50; ctx.drawImage(v,0,0,50,50);
+  let d=ctx.getImageData(0,0,50,50).data, r=0; for(let i=0;i<d.length;i+=4) r+=d[i]; r/=d.length/4;
+  reds.push(r); if(reds.length>150) reds.shift();
+  if(reds.length>60){
+    let avg=reds.slice(-20).reduce((a,b)=>a+b)/20;
+    if(r>avg+1.5 && Date.now()-lastPeak>350){
+      if(lastPeak>0){
+        let bpm=Math.round(60000/(Date.now()-lastPeak));
+        if(bpm>45 && bpm<130){bpms.push(bpm); if(bpms.length>5) bpms.shift(); hr=Math.round(bpms.reduce((a,b)=>a+b)/bpms.length);
+          document.getElementById('bpm').innerText=hr; document.getElementById('status').innerText=hr>100?'偏高 注意':hr<60?'偏低':'正常 '+hr+' bpm';
+          if(hr>110||hr<50){ document.getElementById('alert-bpm').innerText=hr+' bpm'; triggerSOS(hr); }
+        }
+      } lastPeak=Date.now();
+    }
+  } requestAnimationFrame(loop);
+}
+function triggerSOS(bpm){
+  navigator.geolocation.getCurrentPosition(pos=>{
+    let msg=`【Baymax求助】心率异常${bpm}bpm 位置:https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude} 时间:${new Date().toLocaleString()}`;
+    document.getElementById('sosLink').href=`https://wa.me/?text=${encodeURIComponent(msg)}`;
+    document.getElementById('sos').style.display='block'; speak(`心率${bpm}，异常，已准备求助`); navigator.vibrate&&navigator.vibrate([500,200,500]);
+  });
+}
+</script>
+</body>
+</html>

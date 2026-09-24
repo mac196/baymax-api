@@ -197,3 +197,10 @@ async def serve_frontend(full_path: str):
     if index.exists():
         return FileResponse(index)
     return {"status": "Baymax online", "requested": full_path}
+    @app.route('/real')
+def real_pulse():
+    return render_template('pulse_real.html')
+
+@app.route('/pulse-real')
+def pulse_real():
+    return render_template('pulse_real.html')
